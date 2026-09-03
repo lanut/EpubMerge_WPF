@@ -1,0 +1,198 @@
+<Window x:Class="EpubMerge.Gui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="EPUB 合并工具" Width="1200" Height="800" MinWidth="760" MinHeight="540"
+        Background="Transparent" Icon="/EpubMerge.Gui;component/Assets/AppIcon.ico">
+    <Window.TaskbarItemInfo>
+        <shell:TaskbarItemInfo ProgressState="{Binding TaskbarProgressState}"
+                               ProgressValue="{Binding ProgressValue}" />
+    </Window.TaskbarItemInfo>
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="420" />
+            <ColumnDefinition Width="14" />
+            <ColumnDefinition Width="250" MinWidth="210" />
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,18">
+            <StackPanel DockPanel.Dock="Right" Width="180" Margin="18,0,0,0">
+                <TextBlock Text="主题" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5" />
+                <UniformGrid Columns="3">
+                    <Button Content="系统" Tag="System" Click="ThemeModeButton_Click" />
+                    <Button Content="浅色" Tag="Light" Click="ThemeModeButton_Click" />
+                    <Button Content="深色" Tag="Dark" Click="ThemeModeButton_Click" />
+                </UniformGrid>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="EPUB 合并工具" FontSize="26" FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                <TextBlock Text="按列表顺序合并；每本源书会成为合并目录的一级项目。" Margin="0,6,0,0"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+        </DockPanel>
+        <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                Margin="0,0,8,14">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" Background="{DynamicResource AccentFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource ControlStrokeColorOnAccentDefaultBrush}" BorderThickness="1" CornerRadius="10"
+                            Padding="8,2">
+                        <TextBlock Text="{Binding FileCountText}" Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                   FontSize="12" />
+                    </Border>
+                    <TextBlock Text="输入 EPUB" FontWeight="SemiBold" FontSize="16" />
+                </DockPanel>
+                <Grid Grid.Row="1" Margin="0,10">
+                    <ListView x:Name="FilesList" ItemsSource="{Binding Files}"
+                              SelectionMode="Extended" SelectionChanged="FilesList_SelectionChanged" AllowDrop="True"
+                              Drop="FilesList_Drop" DragOver="FilesList_DragOver"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="False">
+                                <GridViewColumn Header="文件名" DisplayMemberBinding="{Binding Name}" Width="260" />
+                                <GridViewColumn Header="完整路径" DisplayMemberBinding="{Binding Path}" Width="560" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                IsHitTestVisible="False" Panel.ZIndex="1">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Files.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="将 EPUB 文件拖放到此处" HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="14" />
+                        <TextBlock Text="也可以使用下方按钮添加文件" HorizontalAlignment="Center" Margin="0,5,0,0"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="12" />
+                    </StackPanel>
+                </Grid>
+                <WrapPanel Grid.Row="2">
+                    <Button Content="添加文件" Background="{DynamicResource SystemFillColorSuccessBrush}"
+                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                            Click="AddFiles_Click" Margin="0 0 8 0"/>
+                    <Button x:Name="RemoveButton" Content="移除"
+                            Background="{DynamicResource SystemFillColorCriticalBrush}"
+                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                            IsEnabled="False" Click="Remove_Click" Margin="0 0 8 0"/>
+                    <Button x:Name="MoveUpButton" Content="上移"
+                            IsEnabled="False" Click="MoveUp_Click" Margin="0 0 8 0"/>
+                    <Button x:Name="MoveDownButton" Content="下移"
+                            IsEnabled="False" Click="MoveDown_Click" Margin="0 0 8 0"/>
+                    <Button Content="清空" Background="{DynamicResource SystemFillColorCautionBrush}"
+                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                            Click="Clear_Click" Margin="0 0 8 0"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
+        <GridSplitter Grid.Row="1" Grid.Column="1" Style="{StaticResource VerticalGridSplitter}"
+                      ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" ShowsPreview="False"
+                      Panel.ZIndex="10" Cursor="SizeWE" />
+        <Border Grid.Row="1" Grid.Column="2" Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16"
+                Margin="8,0,0,14">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="合并设置" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,12"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                <TextBlock Grid.Row="1" Text="输出文件" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <Grid Grid.Row="2" Margin="0,5,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                    <Button Grid.Column="1" Content="选择位置" Click="PickOutput_Click" />
+                </Grid>
+                <StackPanel Grid.Row="3" Margin="0,14,0,0">
+                    <TextBlock Text="合并书名" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" />
+                </StackPanel>
+                <Grid Grid.Row="4" Margin="0,16,0,12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="封面预览" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <Border x:Name="CoverPreviewBorder" Grid.Row="1" Margin="0,7,0,0" MinHeight="120"
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6"
+                            AllowDrop="True" DragOver="CoverPreview_DragOver" Drop="CoverPreview_Drop">
+                        <Grid>
+                            <Image Source="{Binding CoverPreview}" Stretch="Uniform" Margin="8" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="1">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CoverPreview}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock Text="▧" FontSize="34" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding CoverPreviewMessage}"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"
+                                           TextAlignment="Center" TextWrapping="Wrap" />
+                                <TextBlock Text="支持拖放图片进行预览" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Margin="0,8,0,0" TextAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <TextBlock Grid.Row="2" Text="{Binding CoverPreviewStatus}"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="12" Margin="0,6,0,0" />
+                </Grid>
+                <StackPanel Grid.Row="5">
+                    <TextBlock Text="封面图片路径" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBox Text="{Binding CoverPath, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,6" />
+                    <WrapPanel>
+                        <Button Content="选择封面" Click="PickCover_Click" Margin="0,0,8,0" />
+                        <Button Content="清除" Background="{DynamicResource SystemFillColorCriticalBrush}"
+                                Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                Click="ClearCover_Click" Margin="0,0,8,0" />
+                    </WrapPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ProgressBar Height="8" Minimum="0" Maximum="{Binding ProgressTotal}"
+                             Value="{Binding ProgressCompleted}" VerticalAlignment="Center"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <TextBlock Grid.Column="1" Text="{Binding ProgressCountText}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="10,0,0,0"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </Grid>
+        </Grid>
+        <DockPanel Grid.Row="3" Grid.ColumnSpan="3" LastChildFill="False">
+            <StackPanel DockPanel.Dock="Left">
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Height="20" />
+                <TextBlock Text="支持 EPUB 2 / EPUB 3，封面支持 JPG、PNG、GIF、WEBP、SVG。"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+            </StackPanel>
+            <Button x:Name="MergeButton" DockPanel.Dock="Right" Content="开始合并" Click="Merge_Click" />
+        </DockPanel>
+    </Grid>
+</Window>

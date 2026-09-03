@@ -1,0 +1,6 @@
+<Solution>
+    <Project Path="src/EpubMerge.Core.Pure/EpubMerge.Core.Pure.csproj" />
+    <Project Path="src/EpubMerge.Gui/EpubMerge.Gui.csproj" />
+    <Project Path="tests/EpubMerge.Core.Tests/EpubMerge.Core.Tests.csproj" />
+    <Project Path="tests/EpubMerge.Gui.Tests/EpubMerge.Gui.Tests.csproj" />
+</Solution>

@@ -1,0 +1,14 @@
+﻿__pycache__
+.agents
+.ub-cache
+.vs
+.idea
+.doc
+/.ref
+*.epub
+bin/
+obj/
+TestResults/
+/epub_output
+/epub_input
+/publish
