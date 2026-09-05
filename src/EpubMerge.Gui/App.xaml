@@ -6,33 +6,5 @@
              ThemeMode="System">
     <Application.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <Style x:Key="VerticalGridSplitter" TargetType="{x:Type GridSplitter}">
-            <Setter Property="Width" Value="10" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Stretch" />
-            <Setter Property="Background" Value="{DynamicResource ControlAltFillColorSecondaryBrush}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type GridSplitter}">
-                        <Border x:Name="SplitterTrack" Background="{TemplateBinding Background}"
-                                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}" BorderThickness="1"
-                                CornerRadius="3" SnapsToDevicePixels="True">
-                            <Border x:Name="SplitterGrip" Width="3" HorizontalAlignment="Center"
-                                    Background="{DynamicResource TextFillColorTertiaryBrush}" CornerRadius="2" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="SplitterTrack" Property="Background" Value="{DynamicResource ControlAltFillColorTertiaryBrush}" />
-                                <Setter TargetName="SplitterGrip" Property="Width" Value="5" />
-                            </Trigger>
-                            <Trigger Property="IsDragging" Value="True">
-                                <Setter TargetName="SplitterTrack" Property="Background" Value="{DynamicResource ControlAltFillColorTertiaryBrush}" />
-                                <Setter TargetName="SplitterGrip" Property="Width" Value="5" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Application.Resources>
 </Application>
