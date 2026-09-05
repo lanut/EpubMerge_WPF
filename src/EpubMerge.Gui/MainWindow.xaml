@@ -51,11 +51,26 @@
                     <TextBlock Text="输入 EPUB" FontWeight="SemiBold" FontSize="16" />
                 </DockPanel>
                 <Grid Grid.Row="1" Margin="0,10">
-                    <ListView x:Name="FilesList" ItemsSource="{Binding Files}"
+                    <ListView x:Name="FilesList" ItemsSource="{Binding Files}" IsEnabled="{Binding CanEdit}"
                               SelectionMode="Extended" SelectionChanged="FilesList_SelectionChanged" AllowDrop="True"
-                              Drop="FilesList_Drop" DragOver="FilesList_DragOver"
+                              Drop="FilesList_Drop" DragOver="FilesList_DragOver" MouseDoubleClick="FilesList_MouseDoubleClick"
                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
                               ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="设为此书封面" Click="SetCoverFromBook_Click" />
+                                <MenuItem Header="导出封面图片" Click="ExportBookCover_Click" />
+                                <Separator />
+                                <MenuItem Header="在文件资源管理器中定位" Click="LocateBook_Click" />
+                                <MenuItem Header="使用默认应用打开" Click="OpenBook_Click" />
+                                <Separator />
+                                <MenuItem Header="置顶" Click="MoveTop_Click" />
+                                <MenuItem Header="置底" Click="MoveBottom_Click" />
+                                <MenuItem Header="上移" Click="MoveUp_Click" />
+                                <MenuItem Header="下移" Click="MoveDown_Click" />
+                                <MenuItem Header="移除选中项" Click="Remove_Click" />
+                            </ContextMenu>
+                        </ListView.ContextMenu>
                         <ListView.View>
                             <GridView AllowsColumnReorder="False">
                                 <GridViewColumn Header="文件名" DisplayMemberBinding="{Binding Name}" Width="260" />
@@ -82,9 +97,10 @@
                     </StackPanel>
                 </Grid>
                 <WrapPanel Grid.Row="2">
-                    <Button Content="添加文件" Background="{DynamicResource SystemFillColorSuccessBrush}"
+                    <Button Content="添加文件" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorSuccessBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Click="AddFiles_Click" Margin="0 0 8 0"/>
+                    <Button Content="添加文件夹" IsEnabled="{Binding CanEdit}" Click="AddFolder_Click" Margin="0 0 8 0" />
                     <Button x:Name="RemoveButton" Content="移除"
                             Background="{DynamicResource SystemFillColorCriticalBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
@@ -93,7 +109,7 @@
                             IsEnabled="False" Click="MoveUp_Click" Margin="0 0 8 0"/>
                     <Button x:Name="MoveDownButton" Content="下移"
                             IsEnabled="False" Click="MoveDown_Click" Margin="0 0 8 0"/>
-                    <Button Content="清空" Background="{DynamicResource SystemFillColorCautionBrush}"
+                    <Button Content="清空" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorCautionBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Click="Clear_Click" Margin="0 0 8 0"/>
                 </WrapPanel>
@@ -117,12 +133,12 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
-                    <Button Grid.Column="1" Content="选择位置" Click="PickOutput_Click" />
+                    <TextBox Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,0,8,0" />
+                    <Button Grid.Column="1" Content="选择位置" IsEnabled="{Binding CanEdit}" Click="PickOutput_Click" />
                 </Grid>
                 <StackPanel Grid.Row="3" Margin="0,14,0,0">
                     <TextBlock Text="合并书名" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" />
+                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,5,0,0" />
                 </StackPanel>
                 <Grid Grid.Row="4" Margin="0,16,0,12">
                     <Grid.RowDefinitions>
@@ -153,6 +169,8 @@
                                            TextAlignment="Center" TextWrapping="Wrap" />
                                 <TextBlock Text="支持拖放图片进行预览" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Margin="0,8,0,0" TextAlignment="Center" />
+                                <TextBlock Text="可以使用已有图书的封面" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Margin="0,8,0,0" TextAlignment="Center" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -161,10 +179,10 @@
                 </Grid>
                 <StackPanel Grid.Row="5">
                     <TextBlock Text="封面图片路径" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBox Text="{Binding CoverPath, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,6" />
+                    <TextBox Text="{Binding CoverPath, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,5,0,6" />
                     <WrapPanel>
-                        <Button Content="选择封面" Click="PickCover_Click" Margin="0,0,8,0" />
-                        <Button Content="清除" Background="{DynamicResource SystemFillColorCriticalBrush}"
+                        <Button Content="选择封面" IsEnabled="{Binding CanEdit}" Click="PickCover_Click" Margin="0,0,8,0" />
+                        <Button Content="清除" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorCriticalBrush}"
                                 Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                                 Click="ClearCover_Click" Margin="0,0,8,0" />
                     </WrapPanel>
@@ -202,7 +220,10 @@
                     </Hyperlink>
                 </TextBlock>
             </StackPanel>
-            <Button x:Name="MergeButton" DockPanel.Dock="Right" Content="开始合并" Click="Merge_Click" />
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="历史任务" Click="History_Click" HorizontalAlignment="Left" Margin="0, 0,8,0" />
+                <Button x:Name="MergeButton"  Content="开始合并" Click="Merge_Click" />
+            </StackPanel>
         </DockPanel>
     </Grid>
 </Window>

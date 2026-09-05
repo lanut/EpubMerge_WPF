@@ -24,6 +24,9 @@
 - 将每本源书保留为合并目录中的一级项目
 - 支持自定义输出文件路径和合并书名
 - 支持选择或拖放封面图片，并提供封面预览
+- 支持从源 EPUB 提取、导出封面图片
+- 支持文件夹批量导入、自然排序和最近任务恢复
+- 合并过程中可取消任务，完成后可直接打开文件或所在文件夹
 - 支持 JPG、JPEG、PNG、GIF、WEBP、SVG 封面
 - 支持系统、浅色和深色主题
 - 合并过程中显示进度，并同步显示任务栏进度
@@ -40,6 +43,28 @@
 6. 等待状态栏显示合并完成，并在设置的输出位置找到生成的 EPUB 文件。
 
 输出文件必须使用 `.epub` 扩展名，且不能覆盖输入文件。
+
+## CLI 命令行模式
+
+发布的 GUI 程序同时支持命令行模式，不会创建窗口。使用 `--cli` 或 `-c` 开关进入 CLI：
+
+```powershell
+EpubMerge.Gui.exe --cli -i .\vol*.epub -o .\merged.epub --title "合辑"
+EpubMerge.Gui.exe -c -d .\books -r -o .\merged.epub --sort natural
+EpubMerge.Gui.exe --cli -i .\one.epub .\two.epub -o .\merged.epub --cover-from-index 1
+```
+
+常用选项：
+
+- `-i`/`--input`：输入 EPUB 文件、通配符或路径列表
+- `-d`/`--directory`：扫描目录；配合 `-r`/`--recursive` 扫描子目录
+- `-o`/`--output`：输出 EPUB 路径（必需）
+- `--cover`：指定外部封面图片；或使用 `--cover-from-index N` 选择第 N 本书的内置封面
+- `--sort natural|name|none`：自然排序、名称排序或保持输入顺序
+- `-q`/`--quiet`、`-v`/`--verbose`：控制日志输出
+- `-h`/`--help`、`--version`：显示帮助或版本
+
+CLI 退出码为 `0`（成功）、`1`（参数或输入校验失败）和 `2`（运行期异常或取消）。
 
 ## 运行环境
 

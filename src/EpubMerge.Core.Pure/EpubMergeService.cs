@@ -42,7 +42,7 @@ public sealed class EpubMergeService : IEpubMergeService
         {
             cancellationToken.ThrowIfCancellationRequested();
             progress?.Report(new EpubMergeProgress(i, request.InputPaths.Count, $"正在读取第 {i + 1} 本 EPUB…"));
-            books.Add(ReadBook(request.InputPaths[i], i + 1));
+            books.Add(ReadBook(request.InputPaths[i], i + 1, cancellationToken));
         }
 
         var outputPath = Path.GetFullPath(request.OutputPath);
@@ -65,7 +65,7 @@ public sealed class EpubMergeService : IEpubMergeService
                 WriteEntry(archive, "EPUB/style/nav.css", NavCss);
                 written.UnionWith(["mimetype", "META-INF/container.xml", "EPUB/package.opf", "EPUB/nav.xhtml", "EPUB/toc.ncx", "EPUB/style/nav.css"]);
 
-                AddManualCover(archive, request.CoverPath, written);
+                AddManualCover(archive, request.CoverPath, written, cancellationToken);
 
                 for (var i = 0; i < books.Count; i++)
                 {
@@ -83,7 +83,7 @@ public sealed class EpubMergeService : IEpubMergeService
         }
     }
 
-    private static Book ReadBook(string path, int index)
+    private static Book ReadBook(string path, int index, CancellationToken cancellationToken)
     {
         using var archive = ZipFile.OpenRead(path);
         RejectEncryptedEpub(archive, path);
@@ -97,6 +97,7 @@ public sealed class EpubMergeService : IEpubMergeService
 
         foreach (var itemRef in spine)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (book.ItemsById.TryGetValue(itemRef.IdRef, out var item) && IsXhtml(item.MediaType))
             {
                 book.FirstContentHref = $"{book.CopyPrefix}/{JoinHref(opfDirectory, item.Href).Path}";
@@ -364,11 +365,11 @@ public sealed class EpubMergeService : IEpubMergeService
             var targetEntry = destination.CreateEntry(target, CompressionLevel.Optimal);
             using var input = entry.Open();
             using var output = targetEntry.Open();
-            input.CopyTo(output);
+            CopyTo(input, output, token);
         }
     }
 
-    private static void AddManualCover(ZipArchive archive, string? coverPath, HashSet<string> written)
+    private static void AddManualCover(ZipArchive archive, string? coverPath, HashSet<string> written, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(coverPath)) return;
         var zipPath = ManualCoverZipPath(coverPath);
@@ -376,7 +377,18 @@ public sealed class EpubMergeService : IEpubMergeService
         var entry = archive.CreateEntry(zipPath, CompressionLevel.Optimal);
         using var input = File.OpenRead(coverPath);
         using var output = entry.Open();
-        input.CopyTo(output);
+        CopyTo(input, output, token);
+    }
+
+    private static void CopyTo(Stream input, Stream output, CancellationToken token)
+    {
+        var buffer = new byte[64 * 1024];
+        int read;
+        while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+        {
+            token.ThrowIfCancellationRequested();
+            output.Write(buffer, 0, read);
+        }
     }
 
     private static List<TocNode> MergeToc(IEnumerable<Book> books)

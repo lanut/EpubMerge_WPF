@@ -11,6 +11,9 @@ namespace EpubMerge.Gui;
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly IEpubMergeService _mergeService;
+    private readonly IEpubCoverExtractor _coverExtractor;
+    private CancellationTokenSource? _mergeCancellation;
+    private string? _temporaryCoverPath;
     [ObservableProperty]
     public partial string CoverPath { get; set; } = string.Empty;
 
@@ -25,6 +28,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
+
+    public bool CanEdit => !IsBusy;
+
+    partial void OnIsBusyChanged(bool value) => OnPropertyChanged(nameof(CanEdit));
 
     [ObservableProperty]
     public partial double ProgressValue { get; set; }
@@ -50,17 +57,32 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial string Title { get; set; } = "merged";
 
-    public MainViewModel() : this(new EpubMergeService()) { }
-    public MainViewModel(IEpubMergeService mergeService)
+    public MainViewModel() : this(new EpubMergeService(), new EpubCoverExtractor()) { }
+    public MainViewModel(IEpubMergeService mergeService, IEpubCoverExtractor? coverExtractor = null)
     {
         _mergeService = mergeService;
-        OutputPath = Path.Combine(Environment.CurrentDirectory, "merged.epub");
+        _coverExtractor = coverExtractor ?? new EpubCoverExtractor();
+        OutputPath = Path.Combine(TaskHistoryStore.LastOutputDirectory ?? Environment.CurrentDirectory, "merged.epub");
+        foreach (var task in TaskHistoryStore.Load()) RecentTasks.Add(task);
     }
 
     public ObservableCollection<BookFile> Files { get; } = [];
+    public ObservableCollection<RecentMergeTask> RecentTasks { get; } = [];
+
+    public void RestoreTask(RecentMergeTask task)
+    {
+        Files.Clear();
+        foreach (var path in task.InputPaths.Where(path => !string.IsNullOrWhiteSpace(path))) Files.Add(new BookFile(path));
+        OutputPath = task.OutputPath;
+        Title = task.Title;
+        CoverPath = task.CoverPath ?? string.Empty;
+        RefreshSelectionStatus();
+        StatusMessage = "已恢复历史任务配置";
+    }
 
     partial void OnCoverPathChanged(string value)
     {
+        if (!string.Equals(_temporaryCoverPath, value, StringComparison.OrdinalIgnoreCase)) DeleteTemporaryCover();
         UpdateCoverPreview(value);
     }
 
@@ -103,13 +125,57 @@ public sealed partial class MainViewModel : ObservableObject
     public void AddFiles(IEnumerable<string> paths)
     {
         var existing = Files.Select(file => Path.GetFullPath(file.Path)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var candidates = new List<string>();
 
         foreach (var path in paths.Where(path => !string.IsNullOrWhiteSpace(path)))
         {
-            var fullPath = Path.GetFullPath(path);
+            var trimmed = path.Trim().Trim('"');
+            if (Directory.Exists(trimmed) || trimmed.IndexOfAny(['*', '?']) >= 0)
+                candidates.AddRange(EpubInputResolver.Resolve([trimmed], sort: EpubSortMode.Natural));
+            else candidates.Add(Path.GetFullPath(trimmed));
+        }
+
+        foreach (var fullPath in candidates)
+        {
             if (existing.Add(fullPath)) Files.Add(new BookFile(fullPath));
         }
+        SortFilesNatural();
         RefreshSelectionStatus();
+    }
+
+    public bool ExtractCover(BookFile file)
+    {
+        try
+        {
+            var cover = _coverExtractor.ExtractCover(file.Path);
+            if (cover is null)
+            {
+                StatusMessage = $"《{file.Name}》未包含有效封面图片";
+                return false;
+            }
+
+            DeleteTemporaryCover();
+            var directory = Path.Combine(Path.GetTempPath(), "EpubMerge");
+            Directory.CreateDirectory(directory);
+            _temporaryCoverPath = Path.Combine(directory, $"source-cover-{Guid.NewGuid():N}{cover.SuggestedExtension}");
+            File.WriteAllBytes(_temporaryCoverPath, cover.ImageData);
+            CoverPath = _temporaryCoverPath;
+            StatusMessage = $"已从《{file.Name}》中提取封面";
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            StatusMessage = $"无法从《{file.Name}》读取封面：{exception.Message}";
+            return false;
+        }
+    }
+
+    public void CancelMerge()
+    {
+        if (!IsBusy) return;
+        StatusMessage = "正在取消合并…";
+        TaskbarProgressState = TaskbarItemProgressState.Paused;
+        _mergeCancellation?.Cancel();
     }
 
     public void RemoveFiles(IEnumerable<BookFile> files)
@@ -126,7 +192,19 @@ public sealed partial class MainViewModel : ObservableObject
 
     public void MoveFiles(IEnumerable<BookFile> selected, int direction)
     {
-        var indexes = selected.Select(Files.IndexOf).Where(index => index >= 0).Order().ToList();
+        var selectedFiles = selected.Where(Files.Contains).Distinct().ToList();
+        if (direction == int.MinValue)
+        {
+            foreach (var file in selectedFiles.AsEnumerable().Reverse()) Files.Move(Files.IndexOf(file), 0);
+            return;
+        }
+        if (direction == int.MaxValue)
+        {
+            foreach (var file in selectedFiles) Files.Move(Files.IndexOf(file), Files.Count - 1);
+            return;
+        }
+
+        var indexes = selectedFiles.Select(Files.IndexOf).Where(index => index >= 0).Order().ToList();
         if (direction > 0) indexes.Reverse();
 
         foreach (var index in indexes)
@@ -139,6 +217,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     public async Task<MergeUiResult> MergeAsync()
     {
+        if (IsBusy) return new MergeUiResult(false, null, "已有合并任务正在运行");
         var request = new EpubMergeRequest(Files.Select(file => file.Path).ToList(), OutputPath.Trim(),
             string.IsNullOrWhiteSpace(Title) ? Path.GetFileNameWithoutExtension(OutputPath) : Title.Trim(),
             string.IsNullOrWhiteSpace(CoverPath) ? null : CoverPath.Trim());
@@ -149,6 +228,8 @@ public sealed partial class MainViewModel : ObservableObject
         ProgressTotal = 0;
         ProgressCountText = string.Empty;
 
+        using var cancellation = new CancellationTokenSource();
+        _mergeCancellation = cancellation;
         try
         {
             EpubMergeValidator.Validate(request);
@@ -168,13 +249,25 @@ public sealed partial class MainViewModel : ObservableObject
                 ProgressValue = ProgressTotal <= 0 ? 0 : (double)ProgressCompleted / ProgressTotal;
                 StatusMessage = value.Message;
             });
-            await _mergeService.MergeAsync(request, progress);
+            await _mergeService.MergeAsync(request, progress, cancellation.Token);
             ProgressCompleted = ProgressTotal;
             ProgressValue = 1;
             ProgressCountText = $"{ProgressCompleted} / {ProgressTotal}";
             StatusMessage = $"合并完成：{request.OutputPath}";
             TaskbarProgressState = TaskbarItemProgressState.None;
+            TaskHistoryStore.Add(request);
+            RecentTasks.Clear();
+            foreach (var task in TaskHistoryStore.Load()) RecentTasks.Add(task);
             return new MergeUiResult(true, request.OutputPath, null);
+        }
+        catch (OperationCanceledException)
+        {
+            ProgressValue = 0;
+            ProgressCompleted = 0;
+            ProgressCountText = string.Empty;
+            StatusMessage = "已取消合并";
+            TaskbarProgressState = TaskbarItemProgressState.None;
+            return new MergeUiResult(false, null, null, true);
         }
         catch (Exception exception)
         {
@@ -182,7 +275,28 @@ public sealed partial class MainViewModel : ObservableObject
             TaskbarProgressState = TaskbarItemProgressState.Error;
             return new MergeUiResult(false, null, exception.ToString());
         }
-        finally { IsBusy = false; }
+        finally
+        {
+            _mergeCancellation = null;
+            IsBusy = false;
+        }
+    }
+
+    private void SortFilesNatural()
+    {
+        var sorted = Files.OrderBy(file => file.Name, NaturalStringComparer.Instance).ToList();
+        for (var index = 0; index < sorted.Count; index++)
+        {
+            var currentIndex = Files.IndexOf(sorted[index]);
+            if (currentIndex != index) Files.Move(currentIndex, index);
+        }
+    }
+
+    private void DeleteTemporaryCover()
+    {
+        if (_temporaryCoverPath is null) return;
+        try { if (File.Exists(_temporaryCoverPath)) File.Delete(_temporaryCoverPath); } catch { }
+        _temporaryCoverPath = null;
     }
 
     private void RefreshSelectionStatus()
@@ -197,4 +311,4 @@ public sealed record BookFile(string Path)
     public string Name => System.IO.Path.GetFileName(Path);
 }
 
-public sealed record MergeUiResult(bool Succeeded, string? OutputPath, string? Error);
+public sealed record MergeUiResult(bool Succeeded, string? OutputPath, string? Error, bool Canceled = false);
