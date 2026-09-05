@@ -66,11 +66,11 @@ dotnet run --project src/EpubMerge.Gui/EpubMerge.Gui.csproj
 
 仓库包含 GitHub Actions 工作流。推送到 `master` 或提交 Pull Request 时会自动恢复、构建并运行测试。
 
-发布版本时创建并推送一个 `v` 开头的标签，例如：
+发布版本时创建并推送一个 `V` 开头的标签，例如：
 
 ```powershell
-git tag v1.0.0
-git push origin v1.0.0
+git tag V1.0.0
+git push origin V1.0.0
 ```
 
 工作流会在 Windows runner 上生成四个压缩包：`win-x64` 和 `win-arm64` 各自包含自包含版与依赖框架版，并自动创建 GitHub Release。依赖框架版需要目标机器安装 .NET 10 Desktop Runtime。
