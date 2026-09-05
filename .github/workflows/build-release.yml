@@ -1,0 +1,100 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore EpubMerge.slnx
+
+      - name: Build
+        run: dotnet build EpubMerge.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test EpubMerge.slnx --configuration Release --no-build --verbosity normal
+
+  publish:
+    name: Publish ${{ matrix.runtime }} ${{ matrix.mode }}
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runtime: win-x64
+            mode: SelfContained
+          - runtime: win-x64
+            mode: FrameworkDependent
+          - runtime: win-arm64
+            mode: SelfContained
+          - runtime: win-arm64
+            mode: FrameworkDependent
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish
+        shell: pwsh
+        run: .\publish.ps1 -RuntimeIdentifier ${{ matrix.runtime }} -DeploymentMode ${{ matrix.mode }} -Configuration Release -Clean
+
+      - name: Create archive
+        shell: pwsh
+        run: Compress-Archive -Path "publish\${{ matrix.runtime }}\${{ matrix.mode == 'SelfContained' && 'self-contained' || 'framework-dependent' }}\*" -DestinationPath "${{ matrix.runtime }}-${{ matrix.mode }}.zip"
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: epub-merge-${{ matrix.runtime }}-${{ matrix.mode }}
+          path: ${{ matrix.runtime }}-${{ matrix.mode }}.zip
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: publish
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+
+    steps:
+      - name: Download archives
+        uses: actions/download-artifact@v4
+        with:
+          pattern: epub-merge-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*.zip
