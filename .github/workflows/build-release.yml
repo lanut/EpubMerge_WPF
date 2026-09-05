@@ -5,7 +5,7 @@ on:
     branches:
       - master
     tags:
-      - 'v*'
+      - 'V*'
   pull_request:
 
 permissions:
