@@ -14,17 +14,26 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly IEpubCoverExtractor _coverExtractor;
     private CancellationTokenSource? _mergeCancellation;
     private string? _temporaryCoverPath;
+    private string? _statusKey = "SelectFilesToMerge";
+    private object[] _statusArguments = [];
+    private string? _coverPreviewMessageKey = "NoCoverSelected";
+    private object[] _coverPreviewMessageArguments = [];
+    private string? _coverPreviewStatusKey = "SelectImagePreview";
+    private object[] _coverPreviewStatusArguments = [];
     [ObservableProperty]
     public partial string CoverPath { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial ImageSource? CoverPreview { get; set; }
     [ObservableProperty]
-    public partial string CoverPreviewMessage { get; set; } = "未选择封面图片";
+    public partial string CoverPreviewMessage { get; set; } = LanguageManager.Get("NoCoverSelected");
     [ObservableProperty]
-    public partial string CoverPreviewStatus { get; set; } = "可选择图片进行预览";
+    public partial string CoverPreviewStatus { get; set; } = LanguageManager.Get("SelectImagePreview");
     [ObservableProperty]
-    public partial string FileCountText { get; set; } = "还未添加文件";
+    public partial string FileCountText { get; set; } = LanguageManager.Get("NoFiles");
+
+    [ObservableProperty]
+    public partial string SelectedLanguage { get; set; } = LanguageManager.CurrentCulture.Name;
 
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
@@ -52,7 +61,7 @@ public sealed partial class MainViewModel : ObservableObject
     public partial string OutputPath { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial string StatusMessage { get; set; } = "请选择要合并的 EPUB 文件";
+    public partial string StatusMessage { get; set; } = LanguageManager.Get("SelectFilesToMerge");
 
     [ObservableProperty]
     public partial string Title { get; set; } = "merged";
@@ -62,6 +71,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         _mergeService = mergeService;
         _coverExtractor = coverExtractor ?? new EpubCoverExtractor();
+        LanguageManager.CultureChanged += OnCultureChanged;
         OutputPath = Path.Combine(TaskHistoryStore.LastOutputDirectory ?? Environment.CurrentDirectory, "merged.epub");
         foreach (var task in TaskHistoryStore.Load()) RecentTasks.Add(task);
     }
@@ -77,7 +87,7 @@ public sealed partial class MainViewModel : ObservableObject
         Title = task.Title;
         CoverPath = task.CoverPath ?? string.Empty;
         RefreshSelectionStatus();
-        StatusMessage = "已恢复历史任务配置";
+        SetStatus("RestoredTask");
     }
 
     partial void OnCoverPathChanged(string value)
@@ -92,8 +102,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(path))
         {
-            CoverPreviewMessage = "未选择封面图片";
-            CoverPreviewStatus = "可选择图片进行预览";
+            SetCoverPreview("NoCoverSelected", "SelectImagePreview");
             return;
         }
 
@@ -107,18 +116,15 @@ public sealed partial class MainViewModel : ObservableObject
             image.EndInit();
             image.Freeze();
             CoverPreview = image;
-            CoverPreviewMessage = string.Empty;
-            CoverPreviewStatus = $"已加载 {Path.GetExtension(path).TrimStart('.').ToUpperInvariant()} 图片";
+            SetCoverPreview(null, "LoadedImage", Path.GetExtension(path).TrimStart('.').ToUpperInvariant());
         }
         catch (FileNotFoundException)
         {
-            CoverPreviewMessage = "封面文件不存在\n请重新选择图片";
-            CoverPreviewStatus = "无法读取封面路径";
+            SetCoverPreview("CoverFileMissing", "CannotReadCoverPath");
         }
         catch
         {
-            CoverPreviewMessage = "此图片暂时无法展示\n仍可作为封面参与合并";
-            CoverPreviewStatus = "当前格式无法使用系统解码器预览";
+            SetCoverPreview("CoverCannotDisplay", "UnsupportedPreviewFormat");
         }
     }
 
@@ -150,7 +156,7 @@ public sealed partial class MainViewModel : ObservableObject
             var cover = _coverExtractor.ExtractCover(file.Path);
             if (cover is null)
             {
-                StatusMessage = $"《{file.Name}》未包含有效封面图片";
+                SetStatus("CoverMissing", file.Name);
                 return false;
             }
 
@@ -160,12 +166,12 @@ public sealed partial class MainViewModel : ObservableObject
             _temporaryCoverPath = Path.Combine(directory, $"source-cover-{Guid.NewGuid():N}{cover.SuggestedExtension}");
             File.WriteAllBytes(_temporaryCoverPath, cover.ImageData);
             CoverPath = _temporaryCoverPath;
-            StatusMessage = $"已从《{file.Name}》中提取封面";
+            SetStatus("CoverExtracted", file.Name);
             return true;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            StatusMessage = $"无法从《{file.Name}》读取封面：{exception.Message}";
+            SetStatus("CoverReadFailed", file.Name, LanguageManager.Get("CoverReadDetails"));
             return false;
         }
     }
@@ -173,7 +179,7 @@ public sealed partial class MainViewModel : ObservableObject
     public void CancelMerge()
     {
         if (!IsBusy) return;
-        StatusMessage = "正在取消合并…";
+        SetStatus("Cancelling");
         TaskbarProgressState = TaskbarItemProgressState.Paused;
         _mergeCancellation?.Cancel();
     }
@@ -217,7 +223,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     public async Task<MergeUiResult> MergeAsync()
     {
-        if (IsBusy) return new MergeUiResult(false, null, "已有合并任务正在运行");
+        if (IsBusy) return new MergeUiResult(false, null, LanguageManager.Get("MergeAlreadyRunning"));
         var request = new EpubMergeRequest(Files.Select(file => file.Path).ToList(), OutputPath.Trim(),
             string.IsNullOrWhiteSpace(Title) ? Path.GetFileNameWithoutExtension(OutputPath) : Title.Trim(),
             string.IsNullOrWhiteSpace(CoverPath) ? null : CoverPath.Trim());
@@ -237,7 +243,7 @@ public sealed partial class MainViewModel : ObservableObject
             ProgressTotal = request.InputPaths.Count;
             ProgressCountText = $"0 / {ProgressTotal}";
             TaskbarProgressState = TaskbarItemProgressState.Normal;
-            StatusMessage = "正在合并，请稍候…";
+            SetStatus("Merging");
             var progress = new Progress<EpubMergeProgress>(value =>
             {
                 var isReading = value.Message.StartsWith("正在读取", StringComparison.Ordinal);
@@ -247,13 +253,14 @@ public sealed partial class MainViewModel : ObservableObject
                     : Math.Clamp(value.CompletedBooks, 0, value.TotalBooks);
                 ProgressCountText = $"{ProgressCompleted} / {ProgressTotal}";
                 ProgressValue = ProgressTotal <= 0 ? 0 : (double)ProgressCompleted / ProgressTotal;
-                StatusMessage = value.Message;
+                SetStatus(isReading ? "ReadingBook" : "MergedBooks",
+                    isReading ? value.CompletedBooks + 1 : value.CompletedBooks, value.TotalBooks);
             });
             await _mergeService.MergeAsync(request, progress, cancellation.Token);
             ProgressCompleted = ProgressTotal;
             ProgressValue = 1;
             ProgressCountText = $"{ProgressCompleted} / {ProgressTotal}";
-            StatusMessage = $"合并完成：{request.OutputPath}";
+            SetStatus("MergeCompleted", request.OutputPath);
             TaskbarProgressState = TaskbarItemProgressState.None;
             TaskHistoryStore.Add(request);
             RecentTasks.Clear();
@@ -265,17 +272,17 @@ public sealed partial class MainViewModel : ObservableObject
             ProgressValue = 0;
             ProgressCompleted = 0;
             ProgressCountText = string.Empty;
-            StatusMessage = "已取消合并";
+            SetStatus("MergeCanceled");
             TaskbarProgressState = TaskbarItemProgressState.None;
             return new MergeUiResult(false, null, null, true);
         }
         catch (Exception exception)
         {
-            StatusMessage = "合并失败";
+            SetStatus("MergeFailed");
             TaskbarProgressState = TaskbarItemProgressState.Error;
             var logPath = MergeErrorLogger.Write(request, exception);
             var error = MergeErrorFormatter.Format(exception);
-            if (logPath is not null) error += "\n\n详细错误日志已保存到：\n" + logPath;
+            if (logPath is not null) error += "\n\n" + LanguageManager.Get("ErrorLogSaved", logPath);
             return new MergeUiResult(false, null, error);
         }
         finally
@@ -304,8 +311,36 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void RefreshSelectionStatus()
     {
-        FileCountText = Files.Count == 0 ? "还未添加文件" : $"{Files.Count} 本 EPUB";
-        StatusMessage = Files.Count == 0 ? "请选择要合并的 EPUB 文件" : string.Empty;
+        FileCountText = Files.Count == 0 ? LanguageManager.Get("NoFiles") : LanguageManager.Get("FileCount", Files.Count);
+        SetStatus(Files.Count == 0 ? "SelectFilesToMerge" : null);
+    }
+
+    partial void OnSelectedLanguageChanged(string value) => LanguageManager.SetCulture(value);
+
+    private void OnCultureChanged(object? sender, EventArgs e)
+    {
+        CoverPreviewMessage = _coverPreviewMessageKey is null ? string.Empty : LanguageManager.Get(_coverPreviewMessageKey, _coverPreviewMessageArguments);
+        CoverPreviewStatus = _coverPreviewStatusKey is null ? string.Empty : LanguageManager.Get(_coverPreviewStatusKey, _coverPreviewStatusArguments);
+        RefreshSelectionStatus();
+        StatusMessage = _statusKey is null ? string.Empty : LanguageManager.Get(_statusKey, _statusArguments);
+        OnPropertyChanged(nameof(SelectedLanguage));
+    }
+
+    private void SetStatus(string? key, params object[] arguments)
+    {
+        _statusKey = key;
+        _statusArguments = arguments;
+        StatusMessage = key is null ? string.Empty : LanguageManager.Get(key, arguments);
+    }
+
+    private void SetCoverPreview(string? messageKey, string? statusKey, params object[] statusArguments)
+    {
+        _coverPreviewMessageKey = messageKey;
+        _coverPreviewMessageArguments = [];
+        _coverPreviewStatusKey = statusKey;
+        _coverPreviewStatusArguments = statusArguments;
+        CoverPreviewMessage = messageKey is null ? string.Empty : LanguageManager.Get(messageKey);
+        CoverPreviewStatus = statusKey is null ? string.Empty : LanguageManager.Get(statusKey, statusArguments);
     }
 }
 

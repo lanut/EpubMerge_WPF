@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="WindowTitle" xml:space="preserve"><value>EPUB 合并工具</value></data>
+  <data name="Theme" xml:space="preserve"><value>主题</value></data>
+  <data name="System" xml:space="preserve"><value>系统</value></data>
+  <data name="Light" xml:space="preserve"><value>浅色</value></data>
+  <data name="Dark" xml:space="preserve"><value>深色</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>语言</value></data>
+  <data name="Chinese" xml:space="preserve"><value>中文</value></data>
+  <data name="English" xml:space="preserve"><value>English</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>按列表顺序合并；每本源书会成为合并目录的一级项目。</value></data>
+  <data name="InputEpub" xml:space="preserve"><value>输入 EPUB</value></data>
+  <data name="SetCoverFromBook" xml:space="preserve"><value>设为此书封面</value></data>
+  <data name="ExportCover" xml:space="preserve"><value>导出封面图片</value></data>
+  <data name="LocateInExplorer" xml:space="preserve"><value>在文件资源管理器中定位</value></data>
+  <data name="OpenWithDefault" xml:space="preserve"><value>使用默认应用打开</value></data>
+  <data name="MoveTop" xml:space="preserve"><value>置顶</value></data>
+  <data name="MoveBottom" xml:space="preserve"><value>置底</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>上移</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>下移</value></data>
+  <data name="RemoveSelected" xml:space="preserve"><value>移除选中项</value></data>
+  <data name="FileName" xml:space="preserve"><value>文件名</value></data>
+  <data name="FullPath" xml:space="preserve"><value>完整路径</value></data>
+  <data name="DropEpub" xml:space="preserve"><value>将 EPUB 文件拖放到此处</value></data>
+  <data name="AddFilesHint" xml:space="preserve"><value>也可以使用下方按钮添加文件</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>添加文件</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>添加文件夹</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="Clear" xml:space="preserve"><value>清空</value></data>
+  <data name="MergeSettings" xml:space="preserve"><value>合并设置</value></data>
+  <data name="OutputFile" xml:space="preserve"><value>输出文件</value></data>
+  <data name="ChooseLocation" xml:space="preserve"><value>选择位置</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>合并书名</value></data>
+  <data name="CoverPreview" xml:space="preserve"><value>封面预览</value></data>
+  <data name="DropImageHint" xml:space="preserve"><value>支持拖放图片进行预览</value></data>
+  <data name="ExistingCoverHint" xml:space="preserve"><value>可以使用已有图书的封面</value></data>
+  <data name="CoverPath" xml:space="preserve"><value>封面图片路径</value></data>
+  <data name="ChooseCover" xml:space="preserve"><value>选择封面</value></data>
+  <data name="History" xml:space="preserve"><value>历史任务</value></data>
+  <data name="StartMerge" xml:space="preserve"><value>开始合并</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="SupportedFormats" xml:space="preserve"><value>支持 EPUB 2 / EPUB 3，封面支持 JPG、PNG、GIF、WEBP、SVG。</value></data>
+  <data name="Author" xml:space="preserve"><value>作者：lanut | </value></data>
+  <data name="GithubHome" xml:space="preserve"><value> GitHub 项目主页</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>暂无历史任务</value></data>
+  <data name="SelectEpubFile" xml:space="preserve"><value>选择 EPUB 文件</value></data>
+  <data name="SelectFilesToMerge" xml:space="preserve"><value>请选择要合并的 EPUB 文件</value></data>
+  <data name="EpubFileFilter" xml:space="preserve"><value>EPUB 文件|*.epub|所有文件|*.*</value></data>
+  <data name="SelectEpubFolder" xml:space="preserve"><value>选择 EPUB 文件夹</value></data>
+  <data name="SaveMergedEpub" xml:space="preserve"><value>保存合并后的 EPUB</value></data>
+  <data name="SelectCoverImage" xml:space="preserve"><value>选择封面图片</value></data>
+  <data name="ImageFileFilter" xml:space="preserve"><value>图片文件|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.svg|所有文件|*.*</value></data>
+  <data name="ExportCoverImage" xml:space="preserve"><value>导出封面图片</value></data>
+  <data name="ImageFilter" xml:space="preserve"><value>图片文件|*{0}|所有文件|*.*</value></data>
+  <data name="CoverMissing" xml:space="preserve"><value>《{0}》未包含有效封面图片</value></data>
+  <data name="OpenEpubFailed" xml:space="preserve"><value>系统没有找到可以打开 EPUB 文件的应用程序。请先安装或关联 EPUB 阅读器。</value></data>
+  <data name="OpenFileFailed" xml:space="preserve"><value>打开文件失败</value></data>
+  <data name="OpenOutputPrompt" xml:space="preserve"><value>点击“是”打开文件，点击“否”打开所在文件夹。</value></data>
+  <data name="MergeCompletedTitle" xml:space="preserve"><value>合并完成</value></data>
+  <data name="MergeFailedRetry" xml:space="preserve"><value>合并失败，请稍后重试。</value></data>
+  <data name="NoCoverSelected" xml:space="preserve"><value>未选择封面图片</value></data>
+  <data name="SelectImagePreview" xml:space="preserve"><value>可选择图片进行预览</value></data>
+  <data name="NoFiles" xml:space="preserve"><value>还未添加文件</value></data>
+  <data name="FileCount" xml:space="preserve"><value>{0} 本 EPUB</value></data>
+  <data name="RestoredTask" xml:space="preserve"><value>已恢复历史任务配置</value></data>
+  <data name="CoverExtracted" xml:space="preserve"><value>已从《{0}》中提取封面</value></data>
+  <data name="CoverReadFailed" xml:space="preserve"><value>无法从《{0}》读取封面：{1}</value></data>
+  <data name="Cancelling" xml:space="preserve"><value>正在取消合并…</value></data>
+  <data name="MergeAlreadyRunning" xml:space="preserve"><value>已有合并任务正在运行</value></data>
+  <data name="Merging" xml:space="preserve"><value>正在合并，请稍候…</value></data>
+  <data name="ReadingBook" xml:space="preserve"><value>正在读取第 {0} 本 EPUB…</value></data>
+  <data name="MergedBooks" xml:space="preserve"><value>已合并 {0}/{1} 本 EPUB</value></data>
+  <data name="MergeCompleted" xml:space="preserve"><value>合并完成：{0}</value></data>
+  <data name="MergeFailed" xml:space="preserve"><value>合并失败</value></data>
+  <data name="MergeCanceled" xml:space="preserve"><value>已取消合并</value></data>
+  <data name="ErrorLogSaved" xml:space="preserve"><value>详细错误日志已保存到：{0}</value></data>
+  <data name="LoadedImage" xml:space="preserve"><value>已加载 {0} 图片</value></data>
+  <data name="CoverFileMissing" xml:space="preserve"><value>封面文件不存在
+请重新选择图片</value></data>
+  <data name="CoverCannotDisplay" xml:space="preserve"><value>此图片暂时无法展示
+仍可作为封面参与合并</value></data>
+  <data name="CannotReadCoverPath" xml:space="preserve"><value>无法读取封面路径</value></data>
+  <data name="UnsupportedPreviewFormat" xml:space="preserve"><value>当前格式无法使用系统解码器预览</value></data>
+  <data name="MergeErrorInvalidArguments" xml:space="preserve"><value>合并参数无效，请检查输入文件、输出位置和书名。</value></data>
+  <data name="MergeErrorFileNotFound" xml:space="preserve"><value>找不到需要合并的文件，请确认文件仍然存在且可以访问。</value></data>
+  <data name="MergeErrorUnauthorized" xml:space="preserve"><value>没有权限读取输入文件或写入输出位置，请选择有权限的文件夹。</value></data>
+  <data name="MergeErrorIo" xml:space="preserve"><value>文件读写失败，请确认文件没有被其他程序占用，并检查磁盘空间。</value></data>
+  <data name="MergeErrorInvalidData" xml:space="preserve"><value>EPUB 文件结构无效或已损坏，请检查输入文件后重试。</value></data>
+  <data name="MergeErrorXml" xml:space="preserve"><value>EPUB 内部目录格式无效，请更换文件后重试。</value></data>
+  <data name="MergeErrorNotSupported" xml:space="preserve"><value>当前 EPUB 包含暂不支持的内容，请更换文件后重试。</value></data>
+  <data name="MergeErrorUnknown" xml:space="preserve"><value>合并失败，文件可能已损坏或格式不受支持。请检查输入文件后重试。</value></data>
+  <data name="CoverReadDetails" xml:space="preserve"><value>文件可能无法访问或封面格式不受支持</value></data>
+</root>

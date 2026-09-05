@@ -2,7 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Title="EPUB 合并工具" Width="1200" Height="800" MinWidth="760" MinHeight="540"
+        xmlns:local="clr-namespace:EpubMerge.Gui"
+        xmlns:i18n="clr-namespace:Antelcat.I18N.WPF;assembly=Antelcat.I18N.WPF"
+        Title="{i18n:I18N {x:Static local:LangKeys.WindowTitle}}" Width="1200" Height="800" MinWidth="760" MinHeight="540"
         Background="Transparent" Icon="/EpubMerge.Gui;component/Assets/AppIcon.ico">
     <Window.TaskbarItemInfo>
         <shell:TaskbarItemInfo ProgressState="{Binding TaskbarProgressState}"
@@ -19,18 +21,29 @@
             <ColumnDefinition Width="250" MinWidth="210" />
         </Grid.ColumnDefinitions>
         <DockPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,18">
-            <StackPanel DockPanel.Dock="Right" Width="180" Margin="18,0,0,0">
-                <TextBlock Text="主题" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5" />
-                <UniformGrid Columns="3">
-                    <Button Content="系统" Tag="System" Click="ThemeModeButton_Click" />
-                    <Button Content="浅色" Tag="Light" Click="ThemeModeButton_Click" />
-                    <Button Content="深色" Tag="Dark" Click="ThemeModeButton_Click" />
-                </UniformGrid>
-            </StackPanel>
+            <Grid DockPanel.Dock="Right" Margin="18,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="140" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.Theme}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5" />
+                    <StackPanel Orientation="Horizontal" Width="Auto">
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.System}}" Tag="System" Click="ThemeModeButton_Click" Margin="0 0 8 0" />
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Light}}" Tag="Light" Click="ThemeModeButton_Click" Margin="0 0 8 0" />
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Dark}}" Tag="Dark" Click="ThemeModeButton_Click" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.LanguageLabel}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5" />
+                    <ComboBox ItemsSource="{x:Static local:LanguageManager.Languages}" DisplayMemberPath="DisplayName"
+                              SelectedValuePath="CultureName" SelectedValue="{Binding SelectedLanguage, Mode=TwoWay}" />
+                </StackPanel>
+            </Grid>
             <StackPanel>
-                <TextBlock Text="EPUB 合并工具" FontSize="26" FontWeight="SemiBold"
+                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.WindowTitle}}" FontSize="26" FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                <TextBlock Text="按列表顺序合并；每本源书会成为合并目录的一级项目。" Margin="0,6,0,0"
+                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.Subtitle}}" Margin="0,6,0,0"
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
             </StackPanel>
         </DockPanel>
@@ -48,7 +61,7 @@
                         <TextBlock Text="{Binding FileCountText}" Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                                    FontSize="12" />
                     </Border>
-                    <TextBlock Text="输入 EPUB" FontWeight="SemiBold" FontSize="16" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.InputEpub}}" FontWeight="SemiBold" FontSize="16" />
                 </DockPanel>
                 <Grid Grid.Row="1" Margin="0,10">
                     <ListView x:Name="FilesList" ItemsSource="{Binding Files}" IsEnabled="{Binding CanEdit}"
@@ -58,23 +71,23 @@
                               ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListView.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="设为此书封面" Click="SetCoverFromBook_Click" />
-                                <MenuItem Header="导出封面图片" Click="ExportBookCover_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.SetCoverFromBook}}" Click="SetCoverFromBook_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.ExportCover}}" Click="ExportBookCover_Click" />
                                 <Separator />
-                                <MenuItem Header="在文件资源管理器中定位" Click="LocateBook_Click" />
-                                <MenuItem Header="使用默认应用打开" Click="OpenBook_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.LocateInExplorer}}" Click="LocateBook_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.OpenWithDefault}}" Click="OpenBook_Click" />
                                 <Separator />
-                                <MenuItem Header="置顶" Click="MoveTop_Click" />
-                                <MenuItem Header="置底" Click="MoveBottom_Click" />
-                                <MenuItem Header="上移" Click="MoveUp_Click" />
-                                <MenuItem Header="下移" Click="MoveDown_Click" />
-                                <MenuItem Header="移除选中项" Click="Remove_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveTop}}" Click="MoveTop_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveBottom}}" Click="MoveBottom_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveUp}}" Click="MoveUp_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveDown}}" Click="MoveDown_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.RemoveSelected}}" Click="Remove_Click" />
                             </ContextMenu>
                         </ListView.ContextMenu>
                         <ListView.View>
                             <GridView AllowsColumnReorder="False">
-                                <GridViewColumn Header="文件名" DisplayMemberBinding="{Binding Name}" Width="260" />
-                                <GridViewColumn Header="完整路径" DisplayMemberBinding="{Binding Path}" Width="560" />
+                                <GridViewColumn Header="{i18n:I18N {x:Static local:LangKeys.FileName}}" DisplayMemberBinding="{Binding Name}" Width="260" />
+                                <GridViewColumn Header="{i18n:I18N {x:Static local:LangKeys.FullPath}}" DisplayMemberBinding="{Binding Path}" Width="560" />
                             </GridView>
                         </ListView.View>
                     </ListView>
@@ -90,26 +103,26 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="将 EPUB 文件拖放到此处" HorizontalAlignment="Center"
+                        <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.DropEpub}}" HorizontalAlignment="Center"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="14" />
-                        <TextBlock Text="也可以使用下方按钮添加文件" HorizontalAlignment="Center" Margin="0,5,0,0"
+                        <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.AddFilesHint}}" HorizontalAlignment="Center" Margin="0,5,0,0"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="12" />
                     </StackPanel>
                 </Grid>
                 <WrapPanel Grid.Row="2">
-                    <Button Content="添加文件" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorSuccessBrush}"
+                    <Button Content="{i18n:I18N {x:Static local:LangKeys.AddFiles}}" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorSuccessBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Click="AddFiles_Click" Margin="0 0 8 0"/>
-                    <Button Content="添加文件夹" IsEnabled="{Binding CanEdit}" Click="AddFolder_Click" Margin="0 0 8 0" />
-                    <Button x:Name="RemoveButton" Content="移除"
+                    <Button Content="{i18n:I18N {x:Static local:LangKeys.AddFolder}}" IsEnabled="{Binding CanEdit}" Click="AddFolder_Click" Margin="0 0 8 0" />
+                    <Button x:Name="RemoveButton" Content="{i18n:I18N {x:Static local:LangKeys.Remove}}"
                             Background="{DynamicResource SystemFillColorCriticalBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             IsEnabled="False" Click="Remove_Click" Margin="0 0 8 0"/>
-                    <Button x:Name="MoveUpButton" Content="上移"
+                    <Button x:Name="MoveUpButton" Content="{i18n:I18N {x:Static local:LangKeys.MoveUp}}"
                             IsEnabled="False" Click="MoveUp_Click" Margin="0 0 8 0"/>
-                    <Button x:Name="MoveDownButton" Content="下移"
+                    <Button x:Name="MoveDownButton" Content="{i18n:I18N {x:Static local:LangKeys.MoveDown}}"
                             IsEnabled="False" Click="MoveDown_Click" Margin="0 0 8 0"/>
-                    <Button Content="清空" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorCautionBrush}"
+                    <Button Content="{i18n:I18N {x:Static local:LangKeys.Clear}}" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorCautionBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Click="Clear_Click" Margin="0 0 8 0"/>
                 </WrapPanel>
@@ -126,25 +139,25 @@
                     <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Text="合并设置" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,12"
+                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.MergeSettings}}" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,12"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                <TextBlock Grid.Row="1" Text="输出文件" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBlock Grid.Row="1" Text="{i18n:I18N {x:Static local:LangKeys.OutputFile}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                 <Grid Grid.Row="2" Margin="0,5,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBox Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,0,8,0" />
-                    <Button Grid.Column="1" Content="选择位置" IsEnabled="{Binding CanEdit}" Click="PickOutput_Click" />
+                    <Button Grid.Column="1" Content="{i18n:I18N {x:Static local:LangKeys.ChooseLocation}}" IsEnabled="{Binding CanEdit}" Click="PickOutput_Click" />
                 </Grid>
                 <StackPanel Grid.Row="3" Margin="0,14,0,0">
-                    <TextBlock Text="合并书名" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.MergeTitle}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,5,0,0" />
                 </StackPanel>
                 <Grid Grid.Row="4" Margin="0,16,0,12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Text="封面预览" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.CoverPreview}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <Border x:Name="CoverPreviewBorder" Grid.Row="1" Margin="0,7,0,0" MinHeight="120"
                             Background="{DynamicResource ControlFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6"
@@ -167,9 +180,9 @@
                                 <TextBlock Text="{Binding CoverPreviewMessage}"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"
                                            TextAlignment="Center" TextWrapping="Wrap" />
-                                <TextBlock Text="支持拖放图片进行预览" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.DropImageHint}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Margin="0,8,0,0" TextAlignment="Center" />
-                                <TextBlock Text="可以使用已有图书的封面" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.ExistingCoverHint}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Margin="0,8,0,0" TextAlignment="Center" />
                             </StackPanel>
                         </Grid>
@@ -178,11 +191,11 @@
                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="12" Margin="0,6,0,0" />
                 </Grid>
                 <StackPanel Grid.Row="5">
-                    <TextBlock Text="封面图片路径" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.CoverPath}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <TextBox Text="{Binding CoverPath, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,5,0,6" />
                     <WrapPanel>
-                        <Button Content="选择封面" IsEnabled="{Binding CanEdit}" Click="PickCover_Click" Margin="0,0,8,0" />
-                        <Button Content="清除" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorCriticalBrush}"
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.ChooseCover}}" IsEnabled="{Binding CanEdit}" Click="PickCover_Click" Margin="0,0,8,0" />
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Clear}}" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorCriticalBrush}"
                                 Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                                 Click="ClearCover_Click" Margin="0,0,8,0" />
                     </WrapPanel>
@@ -207,22 +220,22 @@
         <DockPanel Grid.Row="3" Grid.ColumnSpan="3" LastChildFill="False">
             <StackPanel DockPanel.Dock="Left">
                 <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Height="20" />
-                <TextBlock Text="支持 EPUB 2 / EPUB 3，封面支持 JPG、PNG、GIF、WEBP、SVG。"
+                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.SupportedFormats}}"
                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                 <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}">
-                    <Run Text="作者：lanut | " />
+                    <Run Text="{i18n:I18N {x:Static local:LangKeys.Author}}" />
                     <Path Width="13" Height="13" Stretch="Uniform"
                           Fill="{DynamicResource TextFillColorTertiaryBrush}"
                           Data="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.084-.729.084-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.776.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.292-1.552 3.297-1.23 3.297-1.23.647 1.653.24 2.873.118 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.575C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
                     <Hyperlink NavigateUri="https://github.com/lanut/EpubMerge_WPF"
                                RequestNavigate="Hyperlink_RequestNavigate">
-                        <Run Text=" GitHub 项目主页" />
+                        <Run Text="{i18n:I18N {x:Static local:LangKeys.GithubHome}}" />
                     </Hyperlink>
                 </TextBlock>
             </StackPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                <Button Content="历史任务" Click="History_Click" HorizontalAlignment="Left" Margin="0, 0,8,0" />
-                <Button x:Name="MergeButton"  Content="开始合并" Click="Merge_Click" />
+                <Button Content="{i18n:I18N {x:Static local:LangKeys.History}}" Click="History_Click" HorizontalAlignment="Left" Margin="0, 0,8,0" />
+                <Button x:Name="MergeButton"  Content="{i18n:I18N {x:Static local:LangKeys.StartMerge}}" Click="Merge_Click" />
             </StackPanel>
         </DockPanel>
     </Grid>

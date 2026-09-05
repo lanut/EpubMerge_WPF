@@ -41,13 +41,13 @@ public partial class MainWindow : Window
 
     private void AddFiles_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Title = "选择 EPUB 文件", Filter = "EPUB 文件|*.epub|所有文件|*.*", Multiselect = true };
+        var dialog = new OpenFileDialog { Title = LanguageManager.Get("SelectEpubFile"), Filter = LanguageManager.Get("EpubFileFilter"), Multiselect = true };
         if (dialog.ShowDialog(this) == true) ViewModel.AddFiles(dialog.FileNames);
     }
 
     private void AddFolder_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog { Title = "选择 EPUB 文件夹" };
+        var dialog = new OpenFolderDialog { Title = LanguageManager.Get("SelectEpubFolder") };
         if (dialog.ShowDialog(this) == true) ViewModel.AddFiles([dialog.FolderName]);
     }
 
@@ -94,7 +94,7 @@ public partial class MainWindow : Window
     private void PickOutput_Click(object sender, RoutedEventArgs e)
     {
         var outputPath = Path.Combine(TaskHistoryStore.LastOutputDirectory ?? Environment.CurrentDirectory, ViewModel.Title.Trim() + ".epub");
-        var dialog = new SaveFileDialog { Title = "保存合并后的 EPUB", DefaultExt = ".epub", Filter = "EPUB 文件|*.epub|所有文件|*.*", FileName = Path.GetFileName(outputPath) };
+        var dialog = new SaveFileDialog { Title = LanguageManager.Get("SaveMergedEpub"), DefaultExt = ".epub", Filter = LanguageManager.Get("EpubFileFilter"), FileName = Path.GetFileName(outputPath) };
 
         if (dialog.ShowDialog(this) == true)
         {
@@ -105,7 +105,7 @@ public partial class MainWindow : Window
 
     private void PickCover_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Title = "选择封面图片", Filter = "图片文件|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.svg|所有文件|*.*" };
+        var dialog = new OpenFileDialog { Title = LanguageManager.Get("SelectCoverImage"), Filter = LanguageManager.Get("ImageFileFilter") };
         if (dialog.ShowDialog(this) == true) ViewModel.CoverPath = dialog.FileName;
     }
 
@@ -137,26 +137,26 @@ public partial class MainWindow : Window
             return;
         }
 
-        MergeButton.Content = "取消";
+        MergeButton.Content = LanguageManager.Get("Cancel");
 
         try
         {
             var result = await ViewModel.MergeAsync();
             if (result.Succeeded)
             {
-                var open = MessageBox.Show(this, $"已生成：\n{result.OutputPath}\n\n点击“是”打开文件，点击“否”打开所在文件夹。", "合并完成",
+                var open = MessageBox.Show(this, $"{LanguageManager.Get("MergeCompleted", result.OutputPath!)}\n\n{LanguageManager.Get("OpenOutputPrompt")}", LanguageManager.Get("MergeCompletedTitle"),
                     MessageBoxButton.YesNo, MessageBoxImage.Information);
                 if (open == MessageBoxResult.Yes) OpenPath(result.OutputPath!);
                 else LocatePath(result.OutputPath!);
             }
             else if (!result.Canceled)
             {
-                MessageBox.Show(this, result.Error ?? "合并失败，请稍后重试。", "合并失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, result.Error ?? LanguageManager.Get("MergeFailedRetry"), LanguageManager.Get("MergeFailed"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         finally
         {
-            MergeButton.Content = "开始合并";
+            MergeButton.Content = LanguageManager.Get("StartMerge");
         }
     }
 
@@ -182,10 +182,10 @@ public partial class MainWindow : Window
         var cover = new EpubCoverExtractor().ExtractCover(file.Path);
         if (cover is null)
         {
-            MessageBox.Show(this, $"《{file.Name}》未包含有效封面图片", "导出封面", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(this, LanguageManager.Get("CoverMissing", file.Name), LanguageManager.Get("ExportCoverImage"), MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
-        var dialog = new SaveFileDialog { Title = "导出封面图片", DefaultExt = cover.SuggestedExtension, Filter = "图片文件|*" + cover.SuggestedExtension + "|所有文件|*.*", FileName = Path.GetFileNameWithoutExtension(file.Name) + cover.SuggestedExtension };
+        var dialog = new SaveFileDialog { Title = LanguageManager.Get("ExportCoverImage"), DefaultExt = cover.SuggestedExtension, Filter = LanguageManager.Get("ImageFilter", cover.SuggestedExtension), FileName = Path.GetFileNameWithoutExtension(file.Name) + cover.SuggestedExtension };
         if (dialog.ShowDialog(this) == true) File.WriteAllBytes(dialog.FileName, cover.ImageData.ToArray());
     }
 
@@ -209,7 +209,7 @@ public partial class MainWindow : Window
         }
         catch (System.ComponentModel.Win32Exception)
         {
-            MessageBox.Show(this, "系统没有找到可以打开 EPUB 文件的应用程序。请先安装或关联 EPUB 阅读器。", "打开文件失败",
+            MessageBox.Show(this, LanguageManager.Get("OpenEpubFailed"), LanguageManager.Get("OpenFileFailed"),
                 MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -221,7 +221,7 @@ public partial class MainWindow : Window
         var menu = new ContextMenu();
         if (ViewModel.RecentTasks.Count == 0)
         {
-            menu.Items.Add(new MenuItem { Header = "暂无历史任务", IsEnabled = false });
+            menu.Items.Add(new MenuItem { Header = LanguageManager.Get("NoHistory"), IsEnabled = false });
         }
         else
         {

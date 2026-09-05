@@ -10,9 +10,24 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\EpubMerge.Core.Pure\EpubMerge.Core.Pure.csproj"/>
+        <PackageReference Include="Antelcat.I18N.WPF" Version="2.0.0-preview-1" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2"/>
     </ItemGroup>
     <ItemGroup>
         <Resource Include="Assets\AppIcon.ico" />
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\Language.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Language.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Language.en.resx">
+            <DependentUpon>Language.resx</DependentUpon>
+        </EmbeddedResource>
+        <Compile Update="Resources\Language.Designer.cs">
+            <AutoGen>True</AutoGen>
+            <DesignTime>True</DesignTime>
+            <DependentUpon>Language.resx</DependentUpon>
+        </Compile>
     </ItemGroup>
 </Project>
