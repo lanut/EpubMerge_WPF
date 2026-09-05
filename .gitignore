@@ -6,9 +6,11 @@
 .doc
 /.ref
 *.epub
+*.sln.DotSettings
 bin/
 obj/
 TestResults/
 /epub_output
 /epub_input
 /publish
+/.temp
