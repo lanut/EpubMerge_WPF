@@ -273,7 +273,10 @@ public sealed partial class MainViewModel : ObservableObject
         {
             StatusMessage = "合并失败";
             TaskbarProgressState = TaskbarItemProgressState.Error;
-            return new MergeUiResult(false, null, exception.ToString());
+            var logPath = MergeErrorLogger.Write(request, exception);
+            var error = MergeErrorFormatter.Format(exception);
+            if (logPath is not null) error += "\n\n详细错误日志已保存到：\n" + logPath;
+            return new MergeUiResult(false, null, error);
         }
         finally
         {

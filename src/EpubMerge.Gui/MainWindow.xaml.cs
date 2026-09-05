@@ -151,7 +151,7 @@ public partial class MainWindow : Window
             }
             else if (!result.Canceled)
             {
-                MessageBox.Show(this, result.Error, "合并失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, result.Error ?? "合并失败，请稍后重试。", "合并失败", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         finally
