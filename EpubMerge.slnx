@@ -2,6 +2,10 @@
     <Folder Name="/PublishScript/">
         <File Path="publish.ps1" />
     </Folder>
+    <Folder Name="/Read me and license/">
+        <File Path="LICENSE" />
+        <File Path="README.md" />
+    </Folder>
     <Project Path="src/EpubMerge.Core.Pure/EpubMerge.Core.Pure.csproj" />
     <Project Path="src/EpubMerge.Gui/EpubMerge.Gui.csproj" />
     <Project Path="tests/EpubMerge.Core.Tests/EpubMerge.Core.Tests.csproj" />
