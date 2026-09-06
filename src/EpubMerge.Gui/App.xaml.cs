@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
+using EpubMerge.Core.Pure;
 
 namespace EpubMerge.Gui;
 
@@ -22,7 +23,12 @@ public partial class App : Application
     {
         if (!e.Args.Any(arg => string.Equals(arg, "--cli", StringComparison.OrdinalIgnoreCase) || string.Equals(arg, "-c", StringComparison.OrdinalIgnoreCase)))
         {
-            var window = new MainWindow();
+            var viewModel = new MainViewModel(
+                new EpubMergeService(),
+                new EpubCoverExtractor(),
+                new FileMergeHistoryStore(),
+                new FileTemporaryCoverStore());
+            var window = new MainWindow(viewModel);
             MainWindow = window;
             window.Show();
             return;
@@ -48,6 +54,7 @@ public partial class App : Application
     /// <summary>Releases application-wide theme event handlers before shutdown.</summary>
     protected override void OnExit(ExitEventArgs e)
     {
+        if (MainWindow?.DataContext is MainViewModel viewModel) viewModel.Dispose();
         ThemeManager.Shutdown();
         base.OnExit(e);
     }

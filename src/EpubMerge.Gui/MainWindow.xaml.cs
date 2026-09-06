@@ -10,26 +10,17 @@ using Microsoft.Win32;
 
 namespace EpubMerge.Gui;
 
-/// <summary>Hosts the merge workflow and translates WPF events into view-model operations.</summary>
+/// <summary>Hosts the merge view and adapts WPF-only events and dialogs to view-model commands.</summary>
 public partial class MainWindow : Window
 {
-    /// <summary>Initializes the window, view model, and selection-state bindings.</summary>
-    public MainWindow()
+    /// <summary>Initializes the window with its composed view model.</summary>
+    public MainWindow(MainViewModel viewModel)
     {
         InitializeComponent();
-
-        // Windows 11 22H2+ supports the Fluent backdrop; older hosts need an opaque fallback resource.
-        if (!IsFluentBackdropSupported())
-        {
-            SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
-        }
-        DataContext = new MainViewModel();
-        ViewModel.PropertyChanged += (_, args) =>
-        {
-            if (args.PropertyName == nameof(MainViewModel.IsBusy)) UpdateSelectionActions();
-        };
-        UpdateSelectionActions();
+        if (!IsFluentBackdropSupported()) SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
+        DataContext = viewModel;
     }
+
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
     private static bool IsFluentBackdropSupported()
@@ -42,12 +33,8 @@ public partial class MainWindow : Window
 
     private void ThemeModeButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button button || button.Tag is not string value ||
-            !Enum.TryParse<AppThemePreference>(value, out var preference))
-        {
-            return;
-        }
-        if (preference != ThemeManager.Preference) ThemeManager.Apply(preference);
+        if (sender is Button { Tag: string value } && Enum.TryParse<AppThemePreference>(value, out var preference) && preference != ThemeManager.Preference)
+            ThemeManager.Apply(preference);
     }
 
     private void AddFiles_Click(object sender, RoutedEventArgs e)
@@ -62,51 +49,13 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog(this) == true) ViewModel.AddFiles([dialog.FolderName]);
     }
 
-    private void Remove_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.RemoveFiles(FilesList.SelectedItems.Cast<BookFile>());
-    }
-    private void Clear_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.ClearFiles();
-    }
-    private void MoveUp_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.MoveFiles(FilesList.SelectedItems.Cast<BookFile>(), -1);
-    }
-    private void MoveDown_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.MoveFiles(FilesList.SelectedItems.Cast<BookFile>(), 1);
-    }
-
-    private void MoveTop_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.MoveFiles(FilesList.SelectedItems.Cast<BookFile>(), int.MinValue);
-    }
-
-    private void MoveBottom_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.MoveFiles(FilesList.SelectedItems.Cast<BookFile>(), int.MaxValue);
-    }
-
-    private void FilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        UpdateSelectionActions();
-    }
-
-    private void UpdateSelectionActions()
-    {
-        var hasSelection = !ViewModel.IsBusy && FilesList.SelectedItems.Count > 0;
-        RemoveButton.IsEnabled = hasSelection;
-        MoveUpButton.IsEnabled = hasSelection;
-        MoveDownButton.IsEnabled = hasSelection;
-    }
+    private void FilesList_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
+        ViewModel.SetSelectedFiles(FilesList.SelectedItems.Cast<BookFile>());
 
     private void PickOutput_Click(object sender, RoutedEventArgs e)
     {
         var outputPath = Path.Combine(TaskHistoryStore.LastOutputDirectory ?? Environment.CurrentDirectory, ViewModel.Title.Trim() + ".epub");
         var dialog = new SaveFileDialog { Title = LanguageManager.Get("SaveMergedEpub"), DefaultExt = ".epub", Filter = LanguageManager.Get("EpubFileFilter"), FileName = Path.GetFileName(outputPath) };
-
         if (dialog.ShowDialog(this) == true)
         {
             ViewModel.OutputPath = Path.ChangeExtension(dialog.FileName, ".epub");
@@ -120,11 +69,6 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog(this) == true) ViewModel.CoverPath = dialog.FileName;
     }
 
-    private void ClearCover_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.CoverPath = string.Empty;
-    }
-
     private void CoverPreview_DragOver(object sender, DragEventArgs e)
     {
         e.Effects = !ViewModel.IsBusy && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
@@ -133,50 +77,8 @@ public partial class MainWindow : Window
 
     private void CoverPreview_Drop(object sender, DragEventArgs e)
     {
-        if (!ViewModel.IsBusy && e.Data.GetData(DataFormats.FileDrop) is string[] paths && paths.Length > 0)
-        {
-            ViewModel.CoverPath = paths[0];
-        }
+        if (!ViewModel.IsBusy && e.Data.GetData(DataFormats.FileDrop) is string[] paths && paths.Length > 0) ViewModel.CoverPath = paths[0];
         e.Handled = true;
-    }
-
-    private async void Merge_Click(object sender, RoutedEventArgs e)
-    {
-        if (ViewModel.IsBusy)
-        {
-            ViewModel.CancelMerge();
-            return;
-        }
-
-        MergeButton.Content = LanguageManager.Get("Cancel");
-
-        try
-        {
-            var result = await ViewModel.MergeAsync();
-
-            if (result.Succeeded)
-            {
-                var open = MessageBox.Show(this, $"{LanguageManager.Get("MergeCompleted", result.OutputPath!)}\n\n{LanguageManager.Get("OpenOutputPrompt")}", LanguageManager.Get("MergeCompletedTitle"),
-                    MessageBoxButton.YesNo, MessageBoxImage.Information);
-
-                if (open == MessageBoxResult.Yes)
-                {
-                    OpenPath(result.OutputPath!);
-                }
-                else
-                {
-                    LocatePath(result.OutputPath!);
-                }
-            }
-            else if (!result.Canceled)
-            {
-                MessageBox.Show(this, result.Error ?? LanguageManager.Get("MergeFailedRetry"), LanguageManager.Get("MergeFailed"), MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        finally
-        {
-            MergeButton.Content = LanguageManager.Get("StartMerge");
-        }
     }
 
     private void FilesList_DragOver(object sender, DragEventArgs e)
@@ -184,29 +86,24 @@ public partial class MainWindow : Window
         e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) && !ViewModel.IsBusy ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
+
     private void FilesList_Drop(object sender, DragEventArgs e)
     {
         if (!ViewModel.IsBusy && e.Data.GetData(DataFormats.FileDrop) is string[] paths) ViewModel.AddFiles(paths);
         e.Handled = true;
     }
 
-    private void SetCoverFromBook_Click(object sender, RoutedEventArgs e)
-    {
-        if (FilesList.SelectedItem is BookFile file) ViewModel.ExtractCover(file);
-    }
-
     private void ExportBookCover_Click(object sender, RoutedEventArgs e)
     {
         if (FilesList.SelectedItem is not BookFile file) return;
-        var cover = new EpubCoverExtractor().ExtractCover(file.Path);
-
+        var cover = ViewModel.GetCoverForExport(file);
         if (cover is null)
         {
             MessageBox.Show(this, LanguageManager.Get("CoverMissing", file.Name), LanguageManager.Get("ExportCoverImage"), MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
         var dialog = new SaveFileDialog { Title = LanguageManager.Get("ExportCoverImage"), DefaultExt = cover.SuggestedExtension, Filter = LanguageManager.Get("ImageFilter", cover.SuggestedExtension), FileName = Path.GetFileNameWithoutExtension(file.Name) + cover.SuggestedExtension };
-        if (dialog.ShowDialog(this) == true) File.WriteAllBytes(dialog.FileName, cover.ImageData.ToArray());
+        if (dialog.ShowDialog(this) == true) File.WriteAllBytes(dialog.FileName, cover.ImageData);
     }
 
     private void LocateBook_Click(object sender, RoutedEventArgs e)
@@ -219,33 +116,43 @@ public partial class MainWindow : Window
         if (FilesList.SelectedItem is BookFile file) OpenPath(file.Path);
     }
 
-    private void FilesList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-    {
-        OpenBook_Click(sender, e);
-    }
+    private void FilesList_MouseDoubleClick(object sender, MouseButtonEventArgs e) => OpenBook_Click(sender, e);
 
     private void OpenPath(string path)
     {
-        try
-        {
-            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
-        }
+        try { Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); }
         catch (Win32Exception)
         {
-            MessageBox.Show(this, LanguageManager.Get("OpenEpubFailed"), LanguageManager.Get("OpenFileFailed"),
-                MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, LanguageManager.Get("OpenEpubFailed"), LanguageManager.Get("OpenFileFailed"), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
-    private static void LocatePath(string path)
+    private static void LocatePath(string path) => Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
+
+    private async void Merge_Click(object sender, RoutedEventArgs e)
     {
-        Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
+        if (ViewModel.IsBusy)
+        {
+            ViewModel.CancelMergeCommand.Execute(null);
+            return;
+        }
+
+        var result = await ViewModel.MergeAsync();
+        if (result.Succeeded)
+        {
+            var open = MessageBox.Show(this, $"{LanguageManager.Get("MergeCompleted", result.OutputPath!)}\n\n{LanguageManager.Get("OpenOutputPrompt")}", LanguageManager.Get("MergeCompletedTitle"), MessageBoxButton.YesNo, MessageBoxImage.Information);
+            if (open == MessageBoxResult.Yes) OpenPath(result.OutputPath!);
+            else LocatePath(result.OutputPath!);
+        }
+        else if (!result.Canceled)
+        {
+            MessageBox.Show(this, result.Error ?? LanguageManager.Get("MergeFailedRetry"), LanguageManager.Get("MergeFailed"), MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void History_Click(object sender, RoutedEventArgs e)
     {
         var menu = new ContextMenu();
-
         if (ViewModel.RecentTasks.Count == 0)
         {
             menu.Items.Add(new MenuItem { Header = LanguageManager.Get("NoHistory"), IsEnabled = false });

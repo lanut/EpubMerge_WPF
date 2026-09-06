@@ -15,7 +15,8 @@ public sealed record RecentMergeTask(IReadOnlyList<string> InputPaths, string Ou
     public string DisplayName => $"{Title}（{InputPaths.Count} 本）— {Path.GetFileName(OutputPath)}";
 }
 
-static class TaskHistoryStore
+/// <summary>Persists recent merge tasks for the desktop application.</summary>
+public static class TaskHistoryStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private static string DirectoryPath => Path.Combine(AppContext.BaseDirectory, "EpubMerge.Gui");

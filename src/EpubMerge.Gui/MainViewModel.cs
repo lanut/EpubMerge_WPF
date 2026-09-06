@@ -1,18 +1,18 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using EpubMerge.Core.Pure;
 
 namespace EpubMerge.Gui;
 
 /// <summary>Owns the merge screen state and coordinates user actions with the EPUB core services.</summary>
-public sealed partial class MainViewModel : ObservableObject
+public sealed partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IEpubCoverExtractor _coverExtractor;
+    private readonly IMergeHistoryStore _historyStore;
     private readonly IEpubMergeService _mergeService;
+    private readonly ITemporaryCoverStore _temporaryCoverStore;
     private object[] _coverPreviewMessageArguments = [];
     private string? _coverPreviewMessageKey = "NoCoverSelected";
     private object[] _coverPreviewStatusArguments = [];
@@ -22,28 +22,44 @@ public sealed partial class MainViewModel : ObservableObject
     private string? _statusKey = "SelectFilesToMerge";
     private string? _temporaryCoverPath;
 
-    /// <summary>Creates a view model backed by the production EPUB services.</summary>
-    public MainViewModel() : this(new EpubMergeService(), new EpubCoverExtractor()) { }
-
-    /// <summary>Creates a view model with injectable services for UI composition and tests.</summary>
+    /// <summary>Creates a view model with application services supplied by the composition root.</summary>
     /// <param name="mergeService">Service that performs the merge.</param>
-    /// <param name="coverExtractor">Optional service that reads embedded covers.</param>
-    public MainViewModel(IEpubMergeService mergeService, IEpubCoverExtractor? coverExtractor = null)
+    /// <param name="coverExtractor">Service that reads embedded covers.</param>
+    /// <param name="historyStore">Persistence adapter for recent merge tasks.</param>
+    /// <param name="temporaryCoverStore">Storage adapter for extracted cover previews.</param>
+    public MainViewModel(
+        IEpubMergeService mergeService,
+        IEpubCoverExtractor coverExtractor,
+        IMergeHistoryStore historyStore,
+        ITemporaryCoverStore temporaryCoverStore)
     {
         _mergeService = mergeService;
-        _coverExtractor = coverExtractor ?? new EpubCoverExtractor();
+        _coverExtractor = coverExtractor;
+        _historyStore = historyStore;
+        _temporaryCoverStore = temporaryCoverStore;
         LanguageManager.CultureChanged += OnCultureChanged;
-        OutputPath = Path.Combine(TaskHistoryStore.LastOutputDirectory ?? Environment.CurrentDirectory, "merged.epub");
-        foreach (var task in TaskHistoryStore.Load()) RecentTasks.Add(task);
+        OutputPath = Path.Combine(_historyStore.LastOutputDirectory ?? Environment.CurrentDirectory, "merged.epub");
+        foreach (var task in _historyStore.Load()) RecentTasks.Add(task);
     }
+
+#if DEBUG
+    /// <summary>
+    /// Only for debugging design
+    /// </summary>
+    public MainViewModel() : this(new EpubMergeService(),
+        new EpubCoverExtractor(),
+        new FileMergeHistoryStore(),
+        new FileTemporaryCoverStore())
+    { }
+#endif
 
     /// <summary>Gets or sets the selected external or extracted cover path.</summary>
     [ObservableProperty]
     public partial string CoverPath { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets the decoded image shown in the cover preview.</summary>
+    /// <summary>Gets or sets the image path shown by the cover preview.</summary>
     [ObservableProperty]
-    public partial ImageSource? CoverPreview { get; set; }
+    public partial string? CoverPreviewPath { get; set; }
 
     /// <summary>Gets or sets the localized cover preview message.</summary>
     [ObservableProperty]
@@ -61,12 +77,30 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial string SelectedLanguage { get; set; } = LanguageManager.CurrentCulture.Name;
 
+    /// <summary>Gets or sets the localized merge/cancel button text.</summary>
+    [ObservableProperty]
+    public partial string MergeButtonText { get; set; } = LanguageManager.Get("StartMerge");
+
     /// <summary>Gets or sets whether a merge is currently running.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanEdit))]
+    [NotifyPropertyChangedFor(nameof(CanEditWithSelection))]
+    [NotifyCanExecuteChangedFor(nameof(ClearFilesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearCoverCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveSelectedFilesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveSelectedFilesUpCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveSelectedFilesDownCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveSelectedFilesToTopCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveSelectedFilesToBottomCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SetCoverFromSelectedBookCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelMergeCommand))]
     public partial bool IsBusy { get; set; }
 
     /// <summary>Gets whether input controls should remain editable.</summary>
     public bool CanEdit => !IsBusy;
+
+    /// <summary>Gets whether commands that operate on selected books can run.</summary>
+    public bool CanEditWithSelection => CanEdit && SelectedFiles.Count > 0;
 
     /// <summary>Gets or sets the progress percentage represented by the progress bar.</summary>
     [ObservableProperty]
@@ -84,9 +118,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial string ProgressCountText { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets the state displayed by the Windows taskbar button.</summary>
+    /// <summary>Gets or sets the presentation-neutral merge progress state.</summary>
     [ObservableProperty]
-    public partial TaskbarItemProgressState TaskbarProgressState { get; set; } = TaskbarItemProgressState.None;
+    public partial MergeProgressState ProgressState { get; set; } = MergeProgressState.None;
 
     /// <summary>Gets or sets the destination EPUB path.</summary>
     [ObservableProperty]
@@ -102,20 +136,32 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>Gets the source EPUB files in their intended merge order.</summary>
     public ObservableCollection<BookFile> Files { get; } = [];
-
+    /// <summary>Gets the current view-provided selection, independent of any WPF control.</summary>
+    public ObservableCollection<BookFile> SelectedFiles { get; } = [];
     /// <summary>Gets persisted merge tasks available for restoration.</summary>
     public ObservableCollection<RecentMergeTask> RecentTasks { get; } = [];
 
     partial void OnIsBusyChanged(bool value)
     {
-        OnPropertyChanged(nameof(CanEdit));
+        MergeButtonText = LanguageManager.Get(value ? "Cancel" : "StartMerge");
+    }
+
+    /// <summary>Replaces the current selection with items extracted by the view.</summary>
+    public void SetSelectedFiles(IEnumerable<BookFile> files)
+    {
+        SelectedFiles.Clear();
+        foreach (var file in files.Where(Files.Contains).Distinct()) SelectedFiles.Add(file);
+        OnPropertyChanged(nameof(CanEditWithSelection));
+        NotifySelectionCommandsCanExecuteChanged();
     }
 
     /// <summary>Restores input and output settings from a saved merge task.</summary>
+    /// <param name="task">The saved merge task to restore.</param>
     public void RestoreTask(RecentMergeTask task)
     {
         Files.Clear();
         foreach (var path in task.InputPaths.Where(path => !string.IsNullOrWhiteSpace(path))) Files.Add(new BookFile(path));
+        SetSelectedFiles([]);
         OutputPath = task.OutputPath;
         Title = task.Title;
         CoverPath = task.CoverPath ?? string.Empty;
@@ -131,56 +177,34 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void UpdateCoverPreview(string path)
     {
-        CoverPreview = null;
-
+        CoverPreviewPath = null;
         if (string.IsNullOrWhiteSpace(path))
         {
             SetCoverPreview("NoCoverSelected", "SelectImagePreview");
             return;
         }
-
-        try
-        {
-            if (!File.Exists(path)) throw new FileNotFoundException();
-            var image = new BitmapImage();
-            image.BeginInit();
-            image.CacheOption = BitmapCacheOption.OnLoad;
-            image.UriSource = new Uri(Path.GetFullPath(path));
-            image.EndInit();
-            image.Freeze();
-            CoverPreview = image;
-            SetCoverPreview(null, "LoadedImage", Path.GetExtension(path).TrimStart('.').ToUpperInvariant());
-        }
-        catch (FileNotFoundException)
+        if (!File.Exists(path))
         {
             SetCoverPreview("CoverFileMissing", "CannotReadCoverPath");
+            return;
         }
-        catch
-        {
-            SetCoverPreview("CoverCannotDisplay", "UnsupportedPreviewFormat");
-        }
+        CoverPreviewPath = Path.GetFullPath(path);
+        SetCoverPreview(null, "LoadedImage", Path.GetExtension(path).TrimStart('.').ToUpperInvariant());
     }
 
     /// <summary>Adds files, directories, or wildcard paths and applies natural filename ordering.</summary>
     public void AddFiles(IEnumerable<string> paths)
     {
+        if (!CanEdit) return;
         var existing = Files.Select(file => Path.GetFullPath(file.Path)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var candidates = new List<string>();
-
         foreach (var path in paths.Where(path => !string.IsNullOrWhiteSpace(path)))
         {
             var trimmed = path.Trim().Trim('"');
-
-            if (Directory.Exists(trimmed) || trimmed.IndexOfAny(['*', '?']) >= 0)
-            {
-                candidates.AddRange(EpubInputResolver.Resolve([trimmed], sort: EpubSortMode.Natural));
-            }
-            else
-            {
-                candidates.Add(Path.GetFullPath(trimmed));
-            }
+            candidates.AddRange(Directory.Exists(trimmed) || trimmed.IndexOfAny(['*', '?']) >= 0
+                ? EpubInputResolver.Resolve([trimmed], sort: EpubSortMode.Natural)
+                : [Path.GetFullPath(trimmed)]);
         }
-
         foreach (var fullPath in candidates)
         {
             if (existing.Add(fullPath)) Files.Add(new BookFile(fullPath));
@@ -189,138 +213,115 @@ public sealed partial class MainViewModel : ObservableObject
         RefreshSelectionStatus();
     }
 
-    /// <summary>Extracts a selected book's embedded cover into a temporary image file.</summary>
-    /// <returns><see langword="true" /> when a cover was extracted and selected.</returns>
-    public bool ExtractCover(BookFile file)
+    /// <summary>Returns a selected book's embedded cover for a view-managed export operation.</summary>
+    /// <param name="file">The source EPUB whose cover should be read.</param>
+    /// <returns>The extracted cover, or <see langword="null" /> when it is unavailable.</returns>
+    public ExtractedCover? GetCoverForExport(BookFile file)
     {
-        try
-        {
-            var cover = _coverExtractor.ExtractCover(file.Path);
-
-            if (cover is null)
-            {
-                SetStatus("CoverMissing", file.Name);
-                return false;
-            }
-
-            DeleteTemporaryCover();
-            // Core APIs return bytes; a temporary file lets the existing cover pipeline and WPF image preview share one path.
-            var directory = Path.Combine(Path.GetTempPath(), "EpubMerge");
-            Directory.CreateDirectory(directory);
-            _temporaryCoverPath = Path.Combine(directory, $"source-cover-{Guid.NewGuid():N}{cover.SuggestedExtension}");
-            File.WriteAllBytes(_temporaryCoverPath, cover.ImageData);
-            CoverPath = _temporaryCoverPath;
-            SetStatus("CoverExtracted", file.Name);
-            return true;
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        try { return _coverExtractor.ExtractCover(file.Path); }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException or NotSupportedException)
         {
             SetStatus("CoverReadFailed", file.Name, LanguageManager.Get("CoverReadDetails"));
-            return false;
+            return null;
         }
-    }
-
-    /// <summary>Requests cancellation of the active merge, if any.</summary>
-    public void CancelMerge()
-    {
-        if (!IsBusy) return;
-        SetStatus("Cancelling");
-        TaskbarProgressState = TaskbarItemProgressState.Paused;
-        _mergeCancellation?.Cancel();
-    }
-
-    /// <summary>Removes the specified source files from the merge list.</summary>
-    public void RemoveFiles(IEnumerable<BookFile> files)
-    {
-        foreach (var file in files.ToList()) Files.Remove(file);
-        RefreshSelectionStatus();
     }
 
     /// <summary>Clears all selected source files.</summary>
-    public void ClearFiles()
+    [RelayCommand(CanExecute = nameof(CanEdit))]
+    private void ClearFiles()
     {
         Files.Clear();
+        SetSelectedFiles([]);
         RefreshSelectionStatus();
     }
 
-    /// <summary>Moves selected files by one position or to an end of the merge list.</summary>
-    /// <param name="selected">Files to move.</param>
-    /// <param name="direction">Negative for up/top and positive for down/bottom.</param>
-    public void MoveFiles(IEnumerable<BookFile> selected, int direction)
+    /// <summary>Clears the selected cover path and preview.</summary>
+    [RelayCommand(CanExecute = nameof(CanEdit))]
+    private void ClearCover() => CoverPath = string.Empty;
+
+    /// <summary>Removes the currently selected source files from the merge list.</summary>
+    [RelayCommand(CanExecute = nameof(CanEditWithSelection))]
+    private void RemoveSelectedFiles()
     {
-        var selectedFiles = selected.Where(Files.Contains).Distinct().ToList();
+        foreach (var file in SelectedFiles.ToList()) Files.Remove(file);
+        SetSelectedFiles([]);
+        RefreshSelectionStatus();
+    }
 
-        if (direction == int.MinValue)
+    /// <summary>Moves the selected source files one position toward the beginning.</summary>
+    [RelayCommand(CanExecute = nameof(CanEditWithSelection))]
+    private void MoveSelectedFilesUp() => MoveSelectedFiles(-1);
+
+    /// <summary>Moves the selected source files one position toward the end.</summary>
+    [RelayCommand(CanExecute = nameof(CanEditWithSelection))]
+    private void MoveSelectedFilesDown() => MoveSelectedFiles(1);
+
+    /// <summary>Moves the selected source files to the beginning of the merge list.</summary>
+    [RelayCommand(CanExecute = nameof(CanEditWithSelection))]
+    private void MoveSelectedFilesToTop() => MoveSelectedFiles(int.MinValue);
+
+    /// <summary>Moves the selected source files to the end of the merge list.</summary>
+    [RelayCommand(CanExecute = nameof(CanEditWithSelection))]
+    private void MoveSelectedFilesToBottom() => MoveSelectedFiles(int.MaxValue);
+
+    /// <summary>Extracts the selected book's cover and uses it as the merge cover.</summary>
+    [RelayCommand(CanExecute = nameof(CanEditWithSelection))]
+    private void SetCoverFromSelectedBook()
+    {
+        var file = SelectedFiles.FirstOrDefault();
+        if (file is null) return;
+        var cover = GetCoverForExport(file);
+        if (cover is null)
         {
-            foreach (var file in selectedFiles.AsEnumerable().Reverse()) Files.Move(Files.IndexOf(file), 0);
+            SetStatus("CoverMissing", file.Name);
             return;
         }
+        DeleteTemporaryCover();
+        _temporaryCoverPath = _temporaryCoverStore.Save(cover);
+        CoverPath = _temporaryCoverPath;
+        SetStatus("CoverExtracted", file.Name);
+    }
 
-        if (direction == int.MaxValue)
-        {
-            foreach (var file in selectedFiles) Files.Move(Files.IndexOf(file), Files.Count - 1);
-            return;
-        }
-
-        var indexes = selectedFiles.Select(Files.IndexOf).Where(index => index >= 0).Order().ToList();
-        if (direction > 0) indexes.Reverse();
-
-        foreach (var index in indexes)
-        {
-            var destination = index + direction;
-            if (destination < 0 || destination >= Files.Count) continue;
-            Files.Move(index, destination);
-        }
+    /// <summary>Requests cancellation of the active merge.</summary>
+    [RelayCommand(CanExecute = nameof(IsBusy))]
+    private void CancelMerge()
+    {
+        SetStatus("Cancelling");
+        ProgressState = MergeProgressState.Paused;
+        _mergeCancellation?.Cancel();
     }
 
     /// <summary>Validates the current state, executes the merge, and converts its outcome to UI data.</summary>
-    /// <returns>A result suitable for status messages and dialogs.</returns>
+    /// <returns>A result suitable for status messages and view-managed dialogs.</returns>
     public async Task<MergeUiResult> MergeAsync()
     {
         if (IsBusy) return new MergeUiResult(false, null, LanguageManager.Get("MergeAlreadyRunning"));
         var request = new EpubMergeRequest(Files.Select(file => file.Path).ToList(), OutputPath.Trim(),
             string.IsNullOrWhiteSpace(Title) ? Path.GetFileNameWithoutExtension(OutputPath) : Title.Trim(),
             string.IsNullOrWhiteSpace(CoverPath) ? null : CoverPath.Trim());
-
-        TaskbarProgressState = TaskbarItemProgressState.None;
+        ProgressState = MergeProgressState.None;
         ProgressValue = 0;
         ProgressCompleted = 0;
         ProgressTotal = 0;
         ProgressCountText = string.Empty;
-
         using var cancellation = new CancellationTokenSource();
         _mergeCancellation = cancellation;
-
         try
         {
             EpubMergeValidator.Validate(request);
             IsBusy = true;
             ProgressTotal = request.InputPaths.Count;
             ProgressCountText = $"0 / {ProgressTotal}";
-            TaskbarProgressState = TaskbarItemProgressState.Normal;
+            ProgressState = MergeProgressState.Normal;
             SetStatus("Merging");
-            // Progress<T> posts through the WPF synchronization context, keeping bound properties on the UI thread.
-            var progress = new Progress<EpubMergeProgress>(value =>
-            {
-                var isReading = value.Message.StartsWith("正在读取", StringComparison.Ordinal);
-                ProgressTotal = value.TotalBooks;
-                ProgressCompleted = isReading
-                    ? 0
-                    : Math.Clamp(value.CompletedBooks, 0, value.TotalBooks);
-                ProgressCountText = $"{ProgressCompleted} / {ProgressTotal}";
-                ProgressValue = ProgressTotal <= 0 ? 0 : (double)ProgressCompleted / ProgressTotal;
-                SetStatus(isReading ? "ReadingBook" : "MergedBooks",
-                    isReading ? value.CompletedBooks + 1 : value.CompletedBooks, value.TotalBooks);
-            });
-            await _mergeService.MergeAsync(request, progress, cancellation.Token);
+            await _mergeService.MergeAsync(request, new Progress<EpubMergeProgress>(UpdateProgress), cancellation.Token);
             ProgressCompleted = ProgressTotal;
             ProgressValue = 1;
             ProgressCountText = $"{ProgressCompleted} / {ProgressTotal}";
             SetStatus("MergeCompleted", request.OutputPath);
-            TaskbarProgressState = TaskbarItemProgressState.None;
-            TaskHistoryStore.Add(request);
-            RecentTasks.Clear();
-            foreach (var task in TaskHistoryStore.Load()) RecentTasks.Add(task);
+            ProgressState = MergeProgressState.None;
+            _historyStore.Add(request);
+            ReloadRecentTasks();
             return new MergeUiResult(true, request.OutputPath, null);
         }
         catch (OperationCanceledException)
@@ -329,13 +330,13 @@ public sealed partial class MainViewModel : ObservableObject
             ProgressCompleted = 0;
             ProgressCountText = string.Empty;
             SetStatus("MergeCanceled");
-            TaskbarProgressState = TaskbarItemProgressState.None;
+            ProgressState = MergeProgressState.None;
             return new MergeUiResult(false, null, null, true);
         }
         catch (Exception exception)
         {
             SetStatus("MergeFailed");
-            TaskbarProgressState = TaskbarItemProgressState.Error;
+            ProgressState = MergeProgressState.Error;
             var logPath = MergeErrorLogger.Write(request, exception);
             var error = MergeErrorFormatter.Format(exception);
             if (logPath is not null) error += "\n\n" + LanguageManager.Get("ErrorLogSaved", logPath);
@@ -348,10 +349,41 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    private void UpdateProgress(EpubMergeProgress value)
+    {
+        var isReading = value.Message.StartsWith("正在读取", StringComparison.Ordinal);
+        ProgressTotal = value.TotalBooks;
+        ProgressCompleted = isReading ? 0 : Math.Clamp(value.CompletedBooks, 0, value.TotalBooks);
+        ProgressCountText = $"{ProgressCompleted} / {ProgressTotal}";
+        ProgressValue = ProgressTotal <= 0 ? 0 : (double)ProgressCompleted / ProgressTotal;
+        SetStatus(isReading ? "ReadingBook" : "MergedBooks", isReading ? value.CompletedBooks + 1 : value.CompletedBooks, value.TotalBooks);
+    }
+
+    private void MoveSelectedFiles(int direction)
+    {
+        var selectedFiles = SelectedFiles.Where(Files.Contains).Distinct().ToList();
+        if (direction == int.MinValue)
+        {
+            foreach (var file in selectedFiles.AsEnumerable().Reverse()) Files.Move(Files.IndexOf(file), 0);
+            return;
+        }
+        if (direction == int.MaxValue)
+        {
+            foreach (var file in selectedFiles) Files.Move(Files.IndexOf(file), Files.Count - 1);
+            return;
+        }
+        var indexes = selectedFiles.Select(Files.IndexOf).Where(index => index >= 0).Order().ToList();
+        if (direction > 0) indexes.Reverse();
+        foreach (var index in indexes)
+        {
+            var destination = index + direction;
+            if (destination >= 0 && destination < Files.Count) Files.Move(index, destination);
+        }
+    }
+
     private void SortFilesNatural()
     {
         var sorted = Files.OrderBy(file => file.Name, NaturalStringComparer.Instance).ToList();
-
         for (var index = 0; index < sorted.Count; index++)
         {
             var currentIndex = Files.IndexOf(sorted[index]);
@@ -362,13 +394,14 @@ public sealed partial class MainViewModel : ObservableObject
     private void DeleteTemporaryCover()
     {
         if (_temporaryCoverPath is null) return;
-
-        try
-        {
-            if (File.Exists(_temporaryCoverPath)) File.Delete(_temporaryCoverPath);
-        }
-        catch { }
+        _temporaryCoverStore.Delete(_temporaryCoverPath);
         _temporaryCoverPath = null;
+    }
+
+    private void ReloadRecentTasks()
+    {
+        RecentTasks.Clear();
+        foreach (var task in _historyStore.Load()) RecentTasks.Add(task);
     }
 
     private void RefreshSelectionStatus()
@@ -377,10 +410,17 @@ public sealed partial class MainViewModel : ObservableObject
         SetStatus(Files.Count == 0 ? "SelectFilesToMerge" : null);
     }
 
-    partial void OnSelectedLanguageChanged(string value)
+    private void NotifySelectionCommandsCanExecuteChanged()
     {
-        LanguageManager.SetCulture(value);
+        RemoveSelectedFilesCommand.NotifyCanExecuteChanged();
+        MoveSelectedFilesUpCommand.NotifyCanExecuteChanged();
+        MoveSelectedFilesDownCommand.NotifyCanExecuteChanged();
+        MoveSelectedFilesToTopCommand.NotifyCanExecuteChanged();
+        MoveSelectedFilesToBottomCommand.NotifyCanExecuteChanged();
+        SetCoverFromSelectedBookCommand.NotifyCanExecuteChanged();
     }
+
+    partial void OnSelectedLanguageChanged(string value) => LanguageManager.SetCulture(value);
 
     private void OnCultureChanged(object? sender, EventArgs e)
     {
@@ -388,6 +428,7 @@ public sealed partial class MainViewModel : ObservableObject
         CoverPreviewStatus = _coverPreviewStatusKey is null ? string.Empty : LanguageManager.Get(_coverPreviewStatusKey, _coverPreviewStatusArguments);
         RefreshSelectionStatus();
         StatusMessage = _statusKey is null ? string.Empty : LanguageManager.Get(_statusKey, _statusArguments);
+        MergeButtonText = LanguageManager.Get(IsBusy ? "Cancel" : "StartMerge");
         OnPropertyChanged(nameof(SelectedLanguage));
     }
 
@@ -407,6 +448,27 @@ public sealed partial class MainViewModel : ObservableObject
         CoverPreviewMessage = messageKey is null ? string.Empty : LanguageManager.Get(messageKey);
         CoverPreviewStatus = statusKey is null ? string.Empty : LanguageManager.Get(statusKey, statusArguments);
     }
+
+    /// <summary>Releases language and temporary-resource subscriptions.</summary>
+    public void Dispose()
+    {
+        LanguageManager.CultureChanged -= OnCultureChanged;
+        _mergeCancellation?.Cancel();
+        DeleteTemporaryCover();
+    }
+}
+
+/// <summary>Represents the display-neutral state of a merge operation.</summary>
+public enum MergeProgressState
+{
+    /// <summary>No active merge progress.</summary>
+    None,
+    /// <summary>A merge is running.</summary>
+    Normal,
+    /// <summary>A merge cancellation has been requested.</summary>
+    Paused,
+    /// <summary>The merge failed.</summary>
+    Error
 }
 
 /// <summary>Represents one EPUB selected in the merge list.</summary>
