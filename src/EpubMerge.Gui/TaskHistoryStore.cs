@@ -15,7 +15,7 @@ public sealed record RecentMergeTask(IReadOnlyList<string> InputPaths, string Ou
     public string DisplayName => $"{Title}（{InputPaths.Count} 本）— {Path.GetFileName(OutputPath)}";
 }
 
-internal static class TaskHistoryStore
+static class TaskHistoryStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private static string DirectoryPath => Path.Combine(AppContext.BaseDirectory, "EpubMerge.Gui");
@@ -46,6 +46,7 @@ internal static class TaskHistoryStore
     {
         var history = Load().Where(item => !string.Equals(item.OutputPath, request.OutputPath, StringComparison.OrdinalIgnoreCase)).ToList();
         history.Insert(0, new RecentMergeTask(request.InputPaths.ToList(), request.OutputPath, request.Title, request.CoverPath));
+
         try
         {
             Directory.CreateDirectory(DirectoryPath);

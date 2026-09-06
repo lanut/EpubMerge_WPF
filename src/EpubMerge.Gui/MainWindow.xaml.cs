@@ -1,7 +1,9 @@
-using System.IO;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Navigation;
 using EpubMerge.Core.Pure;
 using Microsoft.Win32;
@@ -15,9 +17,12 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
         // Windows 11 22H2+ supports the Fluent backdrop; older hosts need an opaque fallback resource.
         if (!IsFluentBackdropSupported())
+        {
             SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
+        }
         DataContext = new MainViewModel();
         ViewModel.PropertyChanged += (_, args) =>
         {
@@ -38,7 +43,10 @@ public partial class MainWindow : Window
     private void ThemeModeButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button button || button.Tag is not string value ||
-            !Enum.TryParse<AppThemePreference>(value, out var preference)) return;
+            !Enum.TryParse<AppThemePreference>(value, out var preference))
+        {
+            return;
+        }
         if (preference != ThemeManager.Preference) ThemeManager.Apply(preference);
     }
 
@@ -145,12 +153,20 @@ public partial class MainWindow : Window
         try
         {
             var result = await ViewModel.MergeAsync();
+
             if (result.Succeeded)
             {
                 var open = MessageBox.Show(this, $"{LanguageManager.Get("MergeCompleted", result.OutputPath!)}\n\n{LanguageManager.Get("OpenOutputPrompt")}", LanguageManager.Get("MergeCompletedTitle"),
                     MessageBoxButton.YesNo, MessageBoxImage.Information);
-                if (open == MessageBoxResult.Yes) OpenPath(result.OutputPath!);
-                else LocatePath(result.OutputPath!);
+
+                if (open == MessageBoxResult.Yes)
+                {
+                    OpenPath(result.OutputPath!);
+                }
+                else
+                {
+                    LocatePath(result.OutputPath!);
+                }
             }
             else if (!result.Canceled)
             {
@@ -183,6 +199,7 @@ public partial class MainWindow : Window
     {
         if (FilesList.SelectedItem is not BookFile file) return;
         var cover = new EpubCoverExtractor().ExtractCover(file.Path);
+
         if (cover is null)
         {
             MessageBox.Show(this, LanguageManager.Get("CoverMissing", file.Name), LanguageManager.Get("ExportCoverImage"), MessageBoxButton.OK, MessageBoxImage.Information);
@@ -202,7 +219,10 @@ public partial class MainWindow : Window
         if (FilesList.SelectedItem is BookFile file) OpenPath(file.Path);
     }
 
-    private void FilesList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => OpenBook_Click(sender, e);
+    private void FilesList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        OpenBook_Click(sender, e);
+    }
 
     private void OpenPath(string path)
     {
@@ -210,18 +230,22 @@ public partial class MainWindow : Window
         {
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         }
-        catch (System.ComponentModel.Win32Exception)
+        catch (Win32Exception)
         {
             MessageBox.Show(this, LanguageManager.Get("OpenEpubFailed"), LanguageManager.Get("OpenFileFailed"),
                 MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
-    private static void LocatePath(string path) => Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
+    private static void LocatePath(string path)
+    {
+        Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
+    }
 
     private void History_Click(object sender, RoutedEventArgs e)
     {
         var menu = new ContextMenu();
+
         if (ViewModel.RecentTasks.Count == 0)
         {
             menu.Items.Add(new MenuItem { Header = LanguageManager.Get("NoHistory"), IsEnabled = false });

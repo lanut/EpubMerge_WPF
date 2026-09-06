@@ -14,12 +14,6 @@ public static class LanguageManager
         new("en-US", "English")
     ];
 
-    /// <summary>Gets the culture currently used for formatting and resources.</summary>
-    public static CultureInfo CurrentCulture { get; private set; } = CultureInfo.GetCultureInfo("zh-CN");
-
-    /// <summary>Occurs after the active UI culture changes.</summary>
-    public static event EventHandler? CultureChanged;
-
     static LanguageManager()
     {
         CultureInfo.CurrentCulture = CurrentCulture;
@@ -27,8 +21,14 @@ public static class LanguageManager
         I18NExtension.Culture = CurrentCulture;
     }
 
+    /// <summary>Gets the culture currently used for formatting and resources.</summary>
+    public static CultureInfo CurrentCulture { get; private set; } = CultureInfo.GetCultureInfo("zh-CN");
+
+    /// <summary>Occurs after the active UI culture changes.</summary>
+    public static event EventHandler? CultureChanged;
+
     /// <summary>Changes the UI culture and refreshes the localization extension.</summary>
-    /// <param name="cultureName">A valid .NET culture name from <see cref="Languages"/>.</param>
+    /// <param name="cultureName">A valid .NET culture name from <see cref="Languages" />.</param>
     public static void SetCulture(string cultureName)
     {
         var culture = CultureInfo.GetCultureInfo(cultureName);
@@ -44,7 +44,7 @@ public static class LanguageManager
     /// <summary>Gets a localized string and optionally formats it with the active culture.</summary>
     /// <param name="key">The resource key.</param>
     /// <param name="arguments">Format arguments for the resource value.</param>
-    /// <returns>The localized value, or <paramref name="key"/> when no resource exists.</returns>
+    /// <returns>The localized value, or <paramref name="key" /> when no resource exists.</returns>
     public static string Get(string key, params object[] arguments)
     {
         var value = Language.ResourceManager.GetString(key, CurrentCulture) ?? key;

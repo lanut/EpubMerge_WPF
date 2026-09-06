@@ -44,7 +44,6 @@ public static class ThemeManager
 
         var effectiveTheme = preference == AppThemePreference.System ? DetectSystemTheme() : preference;
         Application.Current.ThemeMode = effectiveTheme == AppThemePreference.Dark ? ThemeMode.Dark : ThemeMode.Light;
-
     }
 
     /// <summary>Stops listening for system preference changes during application shutdown.</summary>

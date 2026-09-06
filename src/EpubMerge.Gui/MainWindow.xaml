@@ -4,7 +4,8 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:local="clr-namespace:EpubMerge.Gui"
         xmlns:i18n="clr-namespace:Antelcat.I18N.WPF;assembly=Antelcat.I18N.WPF"
-        Title="{i18n:I18N {x:Static local:LangKeys.WindowTitle}}" Width="1200" Height="800" MinWidth="760" MinHeight="540"
+        Title="{i18n:I18N {x:Static local:LangKeys.WindowTitle}}" Width="1200" Height="800" MinWidth="760"
+        MinHeight="540"
         Background="Transparent" Icon="/EpubMerge.Gui;component/Assets/AppIcon.ico">
     <Window.TaskbarItemInfo>
         <shell:TaskbarItemInfo ProgressState="{Binding TaskbarProgressState}"
@@ -27,28 +28,34 @@
                     <ColumnDefinition Width="140" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.Theme}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.Theme}}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5" />
                     <StackPanel Orientation="Horizontal" Width="Auto">
-                        <Button Content="{i18n:I18N {x:Static local:LangKeys.System}}" Tag="System" Click="ThemeModeButton_Click" Margin="0 0 8 0" />
-                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Light}}" Tag="Light" Click="ThemeModeButton_Click" Margin="0 0 8 0" />
-                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Dark}}" Tag="Dark" Click="ThemeModeButton_Click" />
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.System}}" Tag="System"
+                                Click="ThemeModeButton_Click" Margin="0 0 8 0" />
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Light}}" Tag="Light"
+                                Click="ThemeModeButton_Click" Margin="0 0 8 0" />
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Dark}}" Tag="Dark"
+                                Click="ThemeModeButton_Click" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.LanguageLabel}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.LanguageLabel}}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5" />
                     <ComboBox ItemsSource="{x:Static local:LanguageManager.Languages}" DisplayMemberPath="DisplayName"
                               SelectedValuePath="CultureName" SelectedValue="{Binding SelectedLanguage, Mode=TwoWay}" />
                 </StackPanel>
             </Grid>
             <StackPanel>
                 <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.WindowTitle}}" FontSize="26" FontWeight="SemiBold"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                 <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.Subtitle}}" Margin="0,6,0,0"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
             </StackPanel>
         </DockPanel>
         <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource LayerFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8"
+                Padding="12"
                 Margin="0,0,8,14">
             <Grid>
                 <Grid.RowDefinitions>
@@ -56,38 +63,51 @@
                 </Grid.RowDefinitions>
                 <DockPanel>
                     <Border DockPanel.Dock="Right" Background="{DynamicResource AccentFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource ControlStrokeColorOnAccentDefaultBrush}" BorderThickness="1" CornerRadius="10"
+                            BorderBrush="{DynamicResource ControlStrokeColorOnAccentDefaultBrush}" BorderThickness="1"
+                            CornerRadius="10"
                             Padding="8,2">
-                        <TextBlock Text="{Binding FileCountText}" Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                        <TextBlock Text="{Binding FileCountText}"
+                                   Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                                    FontSize="12" />
                     </Border>
-                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.InputEpub}}" FontWeight="SemiBold" FontSize="16" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.InputEpub}}" FontWeight="SemiBold"
+                               FontSize="16" />
                 </DockPanel>
                 <Grid Grid.Row="1" Margin="0,10">
                     <ListView x:Name="FilesList" ItemsSource="{Binding Files}" IsEnabled="{Binding CanEdit}"
                               SelectionMode="Extended" SelectionChanged="FilesList_SelectionChanged" AllowDrop="True"
-                              Drop="FilesList_Drop" DragOver="FilesList_DragOver" MouseDoubleClick="FilesList_MouseDoubleClick"
+                              Drop="FilesList_Drop" DragOver="FilesList_DragOver"
+                              MouseDoubleClick="FilesList_MouseDoubleClick"
                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
                               ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListView.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.SetCoverFromBook}}" Click="SetCoverFromBook_Click" />
-                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.ExportCover}}" Click="ExportBookCover_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.SetCoverFromBook}}"
+                                          Click="SetCoverFromBook_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.ExportCover}}"
+                                          Click="ExportBookCover_Click" />
                                 <Separator />
-                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.LocateInExplorer}}" Click="LocateBook_Click" />
-                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.OpenWithDefault}}" Click="OpenBook_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.LocateInExplorer}}"
+                                          Click="LocateBook_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.OpenWithDefault}}"
+                                          Click="OpenBook_Click" />
                                 <Separator />
                                 <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveTop}}" Click="MoveTop_Click" />
-                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveBottom}}" Click="MoveBottom_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveBottom}}"
+                                          Click="MoveBottom_Click" />
                                 <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveUp}}" Click="MoveUp_Click" />
-                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveDown}}" Click="MoveDown_Click" />
-                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.RemoveSelected}}" Click="Remove_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.MoveDown}}"
+                                          Click="MoveDown_Click" />
+                                <MenuItem Header="{i18n:I18N {x:Static local:LangKeys.RemoveSelected}}"
+                                          Click="Remove_Click" />
                             </ContextMenu>
                         </ListView.ContextMenu>
                         <ListView.View>
                             <GridView AllowsColumnReorder="False">
-                                <GridViewColumn Header="{i18n:I18N {x:Static local:LangKeys.FileName}}" DisplayMemberBinding="{Binding Name}" Width="260" />
-                                <GridViewColumn Header="{i18n:I18N {x:Static local:LangKeys.FullPath}}" DisplayMemberBinding="{Binding Path}" Width="560" />
+                                <GridViewColumn Header="{i18n:I18N {x:Static local:LangKeys.FileName}}"
+                                                DisplayMemberBinding="{Binding Name}" Width="260" />
+                                <GridViewColumn Header="{i18n:I18N {x:Static local:LangKeys.FullPath}}"
+                                                DisplayMemberBinding="{Binding Path}" Width="560" />
                             </GridView>
                         </ListView.View>
                     </ListView>
@@ -105,26 +125,30 @@
                         </StackPanel.Style>
                         <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.DropEpub}}" HorizontalAlignment="Center"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="14" />
-                        <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.AddFilesHint}}" HorizontalAlignment="Center" Margin="0,5,0,0"
+                        <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.AddFilesHint}}"
+                                   HorizontalAlignment="Center" Margin="0,5,0,0"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="12" />
                     </StackPanel>
                 </Grid>
                 <WrapPanel Grid.Row="2">
-                    <Button Content="{i18n:I18N {x:Static local:LangKeys.AddFiles}}" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorSuccessBrush}"
+                    <Button Content="{i18n:I18N {x:Static local:LangKeys.AddFiles}}" IsEnabled="{Binding CanEdit}"
+                            Background="{DynamicResource SystemFillColorSuccessBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                            Click="AddFiles_Click" Margin="0 0 8 0"/>
-                    <Button Content="{i18n:I18N {x:Static local:LangKeys.AddFolder}}" IsEnabled="{Binding CanEdit}" Click="AddFolder_Click" Margin="0 0 8 0" />
+                            Click="AddFiles_Click" Margin="0 0 8 0" />
+                    <Button Content="{i18n:I18N {x:Static local:LangKeys.AddFolder}}" IsEnabled="{Binding CanEdit}"
+                            Click="AddFolder_Click" Margin="0 0 8 0" />
                     <Button x:Name="RemoveButton" Content="{i18n:I18N {x:Static local:LangKeys.Remove}}"
                             Background="{DynamicResource SystemFillColorCriticalBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                            IsEnabled="False" Click="Remove_Click" Margin="0 0 8 0"/>
+                            IsEnabled="False" Click="Remove_Click" Margin="0 0 8 0" />
                     <Button x:Name="MoveUpButton" Content="{i18n:I18N {x:Static local:LangKeys.MoveUp}}"
-                            IsEnabled="False" Click="MoveUp_Click" Margin="0 0 8 0"/>
+                            IsEnabled="False" Click="MoveUp_Click" Margin="0 0 8 0" />
                     <Button x:Name="MoveDownButton" Content="{i18n:I18N {x:Static local:LangKeys.MoveDown}}"
-                            IsEnabled="False" Click="MoveDown_Click" Margin="0 0 8 0"/>
-                    <Button Content="{i18n:I18N {x:Static local:LangKeys.Clear}}" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorCautionBrush}"
+                            IsEnabled="False" Click="MoveDown_Click" Margin="0 0 8 0" />
+                    <Button Content="{i18n:I18N {x:Static local:LangKeys.Clear}}" IsEnabled="{Binding CanEdit}"
+                            Background="{DynamicResource SystemFillColorCautionBrush}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                            Click="Clear_Click" Margin="0 0 8 0"/>
+                            Click="Clear_Click" Margin="0 0 8 0" />
                 </WrapPanel>
             </Grid>
         </Border>
@@ -132,35 +156,44 @@
                       ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" ShowsPreview="False"
                       Panel.ZIndex="10" Cursor="SizeWE" />
         <Border Grid.Row="1" Grid.Column="2" Background="{DynamicResource LayerFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8"
+                Padding="16"
                 Margin="8,0,0,14">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.MergeSettings}}" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,12"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                <TextBlock Grid.Row="1" Text="{i18n:I18N {x:Static local:LangKeys.OutputFile}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.MergeSettings}}" FontWeight="SemiBold"
+                           FontSize="16" Margin="0,0,0,12"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                <TextBlock Grid.Row="1" Text="{i18n:I18N {x:Static local:LangKeys.OutputFile}}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                 <Grid Grid.Row="2" Margin="0,5,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,0,8,0" />
-                    <Button Grid.Column="1" Content="{i18n:I18N {x:Static local:LangKeys.ChooseLocation}}" IsEnabled="{Binding CanEdit}" Click="PickOutput_Click" />
+                    <TextBox Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding CanEdit}" Margin="0,0,8,0" />
+                    <Button Grid.Column="1" Content="{i18n:I18N {x:Static local:LangKeys.ChooseLocation}}"
+                            IsEnabled="{Binding CanEdit}" Click="PickOutput_Click" />
                 </Grid>
                 <StackPanel Grid.Row="3" Margin="0,14,0,0">
-                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.MergeTitle}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,5,0,0" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.MergeTitle}}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}"
+                             Margin="0,5,0,0" />
                 </StackPanel>
                 <Grid Grid.Row="4" Margin="0,16,0,12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.CoverPreview}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.CoverPreview}}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <Border x:Name="CoverPreviewBorder" Grid.Row="1" Margin="0,7,0,0" MinHeight="120"
                             Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                            CornerRadius="6"
                             AllowDrop="True" DragOver="CoverPreview_DragOver" Drop="CoverPreview_Drop">
                         <Grid>
                             <Image Source="{Binding CoverPreview}" Stretch="Uniform" Margin="8" />
@@ -175,27 +208,34 @@
                                         </Style.Triggers>
                                     </Style>
                                 </StackPanel.Style>
-                                <TextBlock Text="▧" FontSize="34" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                <TextBlock Text="▧" FontSize="34"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                            HorizontalAlignment="Center" />
                                 <TextBlock Text="{Binding CoverPreviewMessage}"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"
                                            TextAlignment="Center" TextWrapping="Wrap" />
-                                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.DropImageHint}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.DropImageHint}}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Margin="0,8,0,0" TextAlignment="Center" />
-                                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.ExistingCoverHint}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.ExistingCoverHint}}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Margin="0,8,0,0" TextAlignment="Center" />
                             </StackPanel>
                         </Grid>
                     </Border>
                     <TextBlock Grid.Row="2" Text="{Binding CoverPreviewStatus}"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="12" Margin="0,6,0,0" />
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="12" Margin="0,6,0,0" />
                 </Grid>
                 <StackPanel Grid.Row="5">
-                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.CoverPath}}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBox Text="{Binding CoverPath, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" Margin="0,5,0,6" />
+                    <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.CoverPath}}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBox Text="{Binding CoverPath, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding CanEdit}" Margin="0,5,0,6" />
                     <WrapPanel>
-                        <Button Content="{i18n:I18N {x:Static local:LangKeys.ChooseCover}}" IsEnabled="{Binding CanEdit}" Click="PickCover_Click" Margin="0,0,8,0" />
-                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Clear}}" IsEnabled="{Binding CanEdit}" Background="{DynamicResource SystemFillColorCriticalBrush}"
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.ChooseCover}}"
+                                IsEnabled="{Binding CanEdit}" Click="PickCover_Click" Margin="0,0,8,0" />
+                        <Button Content="{i18n:I18N {x:Static local:LangKeys.Clear}}" IsEnabled="{Binding CanEdit}"
+                                Background="{DynamicResource SystemFillColorCriticalBrush}"
                                 Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                                 Click="ClearCover_Click" Margin="0,0,8,0" />
                     </WrapPanel>
@@ -219,7 +259,8 @@
         </Grid>
         <DockPanel Grid.Row="3" Grid.ColumnSpan="3" LastChildFill="False">
             <StackPanel DockPanel.Dock="Left">
-                <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Height="20" />
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Height="20" />
                 <TextBlock Text="{i18n:I18N {x:Static local:LangKeys.SupportedFormats}}"
                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                 <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}">
@@ -234,8 +275,10 @@
                 </TextBlock>
             </StackPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                <Button Content="{i18n:I18N {x:Static local:LangKeys.History}}" Click="History_Click" HorizontalAlignment="Left" Margin="0, 0,8,0" />
-                <Button x:Name="MergeButton"  Content="{i18n:I18N {x:Static local:LangKeys.StartMerge}}" Click="Merge_Click" />
+                <Button Content="{i18n:I18N {x:Static local:LangKeys.History}}" Click="History_Click"
+                        HorizontalAlignment="Left" Margin="0, 0,8,0" />
+                <Button x:Name="MergeButton" Content="{i18n:I18N {x:Static local:LangKeys.StartMerge}}"
+                        Click="Merge_Click" />
             </StackPanel>
         </DockPanel>
     </Grid>

@@ -26,7 +26,7 @@ public class MergeErrorLoggerTests
 
     private static string? InvokeLogger(EpubMergeRequest request, Exception exception)
     {
-        var logger = typeof(EpubMerge.Gui.MergeUiResult).Assembly
+        var logger = typeof(MergeUiResult).Assembly
             .GetType("EpubMerge.Gui.MergeErrorLogger")!;
         return (string?)logger.GetMethod("Write")!.Invoke(null, [request, exception]);
     }

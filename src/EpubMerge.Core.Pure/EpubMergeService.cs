@@ -34,7 +34,10 @@ public sealed class EpubMergeService : IEpubMergeService
     /// <param name="request">The source files, output path, title, and optional cover.</param>
     /// <param name="progress">Optional progress reporter; reports source reading and copying.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <returns>A task that completes when the merged EPUB is ready at <paramref name="request"/>.<see cref="EpubMergeRequest.OutputPath"/>.</returns>
+    /// <returns>
+    ///     A task that completes when the merged EPUB is ready at <paramref name="request" />.
+    ///     <see cref="EpubMergeRequest.OutputPath" />.
+    /// </returns>
     /// <remarks>A temporary file in the output directory is moved into place only after the ZIP is complete.</remarks>
     public Task MergeAsync(EpubMergeRequest request, IProgress<EpubMergeProgress>? progress = null,
         CancellationToken cancellationToken = default(CancellationToken))
@@ -110,6 +113,7 @@ public sealed class EpubMergeService : IEpubMergeService
         foreach (var itemRef in spine)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
             if (book.ItemsById.TryGetValue(itemRef.IdRef, out var item) && IsXhtml(item.MediaType))
             {
                 book.FirstContentHref = $"{book.CopyPrefix}/{JoinHref(opfDirectory, item.Href).Path}";
@@ -396,6 +400,7 @@ public sealed class EpubMergeService : IEpubMergeService
     {
         var buffer = new byte[64 * 1024];
         int read;
+
         while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
         {
             token.ThrowIfCancellationRequested();

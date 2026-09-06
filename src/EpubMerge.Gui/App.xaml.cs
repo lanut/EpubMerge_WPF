@@ -1,22 +1,22 @@
-using System.Windows;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows;
 
 namespace EpubMerge.Gui;
 
 /// <summary>Initializes the WPF application and selects GUI or command-line startup mode.</summary>
 public partial class App : Application
 {
-    [DllImport("kernel32.dll")]
-    private static extern bool AllocConsole();
-    [DllImport("kernel32.dll")]
-    private static extern bool FreeConsole();
-
     /// <summary>Initializes application resources and the persisted theme.</summary>
     public App()
     {
         InitializeComponent();
         ThemeManager.Initialize();
     }
+    [DllImport("kernel32.dll")]
+    private static extern bool AllocConsole();
+    [DllImport("kernel32.dll")]
+    private static extern bool FreeConsole();
 
     private async void Application_Startup(object sender, StartupEventArgs e)
     {
@@ -30,7 +30,8 @@ public partial class App : Application
 
         // A WinExe has no console by default; create one only for the explicit CLI entry point.
         AllocConsole();
-        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+
         try
         {
             var cliArgs = e.Args.Where(arg => !string.Equals(arg, "--cli", StringComparison.OrdinalIgnoreCase) && !string.Equals(arg, "-c", StringComparison.OrdinalIgnoreCase)).ToArray();

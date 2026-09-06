@@ -41,7 +41,7 @@ public static class EpubMergeValidator
 
     /// <summary>Checks paths, extensions, collisions, and optional cover files.</summary>
     /// <param name="request">The request to validate.</param>
-    /// <exception cref="ArgumentNullException">The request is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">The request is <see langword="null" />.</exception>
     /// <exception cref="ArgumentException">A request value is invalid.</exception>
     /// <exception cref="FileNotFoundException">An input or cover file does not exist.</exception>
     public static void Validate(EpubMergeRequest request)

@@ -4,10 +4,10 @@ using EpubMerge.Core.Pure;
 
 namespace EpubMerge.Gui;
 
-internal static class MergeErrorLogger
+static class MergeErrorLogger
 {
     /// <summary>Appends merge request details and the exception stack to the local diagnostic log.</summary>
-    /// <returns>The log path, or <see langword="null"/> when logging itself fails.</returns>
+    /// <returns>The log path, or <see langword="null" /> when logging itself fails.</returns>
     public static string? Write(EpubMergeRequest request, Exception exception)
     {
         try

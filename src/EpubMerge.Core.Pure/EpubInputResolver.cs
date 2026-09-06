@@ -27,25 +27,37 @@ public static class EpubInputResolver
     public static IReadOnlyList<string> Resolve(IEnumerable<string> paths, string? directory = null, bool recursive = false, EpubSortMode sort = EpubSortMode.Natural)
     {
         var candidates = new List<string>();
+
         foreach (var raw in paths ?? [])
         {
             if (string.IsNullOrWhiteSpace(raw)) continue;
             var path = raw.Trim().Trim('"');
-            if (File.Exists(path)) candidates.Add(Path.GetFullPath(path));
-            else if (Directory.Exists(path)) candidates.AddRange(ScanDirectory(path, recursive));
+
+            if (File.Exists(path))
+            {
+                candidates.Add(Path.GetFullPath(path));
+            }
+            else if (Directory.Exists(path))
+            {
+                candidates.AddRange(ScanDirectory(path, recursive));
+            }
             else if (HasWildcard(path))
             {
                 var parent = Path.GetDirectoryName(path);
                 if (string.IsNullOrWhiteSpace(parent)) parent = Environment.CurrentDirectory;
                 var pattern = Path.GetFileName(path);
+
                 if (!string.IsNullOrWhiteSpace(parent) && Directory.Exists(parent))
+                {
                     candidates.AddRange(Directory.EnumerateFiles(parent, pattern, SearchOption.TopDirectoryOnly));
+                }
             }
         }
         if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory)) candidates.AddRange(ScanDirectory(directory, recursive));
 
         var result = candidates.Where(path => string.Equals(Path.GetExtension(path), ".epub", StringComparison.OrdinalIgnoreCase))
             .Select(Path.GetFullPath).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
         switch (sort)
         {
             case EpubSortMode.Natural:
@@ -61,17 +73,28 @@ public static class EpubInputResolver
         return result;
     }
 
-    private static IEnumerable<string> ScanDirectory(string path, bool recursive) =>
-        Directory.EnumerateFiles(path, "*.epub", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-    private static bool HasWildcard(string value) => value.IndexOfAny(['*', '?']) >= 0;
+    private static IEnumerable<string> ScanDirectory(string path, bool recursive)
+    {
+        return Directory.EnumerateFiles(path, "*.epub", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+    }
+    private static bool HasWildcard(string value)
+    {
+        return value.IndexOfAny(['*', '?']) >= 0;
+    }
 }
 
 /// <summary>Compares strings by their text and numeric segments, so <c>book2</c> precedes <c>book10</c>.</summary>
 public sealed partial class NaturalStringComparer : IComparer<string>, IComparer
 {
+    private static readonly Regex tokenizer = MyRegexSource();
+
     /// <summary>Gets the shared comparer instance.</summary>
     public static NaturalStringComparer Instance { get; } = new();
-    private static readonly Regex tokenizer = MyRegexSource();
+
+    int IComparer.Compare(object? x, object? y)
+    {
+        return Compare(x as string, y as string);
+    }
     /// <summary>Compares two strings using case-insensitive natural ordering.</summary>
     public int Compare(string? x, string? y)
     {
@@ -80,6 +103,7 @@ public sealed partial class NaturalStringComparer : IComparer<string>, IComparer
         if (y is null) return 1;
         var left = tokenizer.Split(x);
         var right = tokenizer.Split(y);
+
         for (var i = 0; i < Math.Min(left.Length, right.Length); i++)
         {
             var aIsNumber = long.TryParse(left[i], NumberStyles.None, CultureInfo.InvariantCulture, out var a);
@@ -89,7 +113,6 @@ public sealed partial class NaturalStringComparer : IComparer<string>, IComparer
         }
         return left.Length.CompareTo(right.Length);
     }
-    int IComparer.Compare(object? x, object? y) => Compare(x as string, y as string);
     [GeneratedRegex(@"(\d+)", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
     private static partial Regex MyRegexSource();
 }

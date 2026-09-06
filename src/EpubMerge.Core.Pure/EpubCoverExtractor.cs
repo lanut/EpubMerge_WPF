@@ -10,7 +10,7 @@ public interface IEpubCoverExtractor
 {
     /// <summary>Attempts to extract the cover image declared by an EPUB package.</summary>
     /// <param name="epubPath">Path to the source EPUB file.</param>
-    /// <returns>The image bytes and a suitable file extension, or <see langword="null"/> when no supported cover is found.</returns>
+    /// <returns>The image bytes and a suitable file extension, or <see langword="null" /> when no supported cover is found.</returns>
     /// <exception cref="FileNotFoundException">The EPUB file does not exist.</exception>
     /// <exception cref="NotSupportedException">The EPUB contains encrypted resources.</exception>
     /// <exception cref="InvalidDataException">The EPUB package metadata is missing or invalid.</exception>
@@ -39,7 +39,7 @@ public sealed class EpubCoverExtractor : IEpubCoverExtractor
 
     /// <summary>Reads the cover declaration from an EPUB and returns the referenced image.</summary>
     /// <param name="epubPath">Path to the source EPUB file.</param>
-    /// <returns>The extracted cover, or <see langword="null"/> when the package has no usable supported cover.</returns>
+    /// <returns>The extracted cover, or <see langword="null" /> when the package has no usable supported cover.</returns>
     /// <remarks>Cover discovery checks EPUB 3 <c>cover-image</c>, EPUB 2 cover metadata, and common cover names.</remarks>
     /// <exception cref="ArgumentException">The path is empty or consists only of whitespace.</exception>
     /// <exception cref="FileNotFoundException">The EPUB file does not exist.</exception>
@@ -50,8 +50,11 @@ public sealed class EpubCoverExtractor : IEpubCoverExtractor
         if (!File.Exists(epubPath)) throw new FileNotFoundException($"找不到 EPUB 文件：{epubPath}", epubPath);
 
         using var archive = ZipFile.OpenRead(epubPath);
+
         if (archive.GetEntry("META-INF/encryption.xml") is not null)
+        {
             throw new NotSupportedException($"不支持包含 META-INF/encryption.xml 的 EPUB：{epubPath}");
+        }
 
         var container = ReadXml(archive, "META-INF/container.xml");
         var opfPath = container.Descendants().FirstOrDefault(e => e.Name.LocalName == "rootfile")?.Attribute("full-path")?.Value;
@@ -69,6 +72,7 @@ public sealed class EpubCoverExtractor : IEpubCoverExtractor
             .ToList();
 
         var cover = manifest.FirstOrDefault(item => HasProperty(item.Properties, "cover-image"));
+
         if (cover is null)
         {
             var content = opf.Descendants().FirstOrDefault(e => e.Name.LocalName == "meta" &&
@@ -109,29 +113,48 @@ public sealed class EpubCoverExtractor : IEpubCoverExtractor
         return type != default;
     }
 
-    private static bool IsSupportedImage(string mediaType, string href) => TryGetImageType(mediaType, href, out _);
-    private static bool HasProperty(string properties, string property) =>
-        properties.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Contains(property, StringComparer.Ordinal);
-    private static string DirectoryOf(string path) => path[..Math.Max(0, path.LastIndexOf('/'))];
+    private static bool IsSupportedImage(string mediaType, string href)
+    {
+        return TryGetImageType(mediaType, href, out _);
+    }
+    private static bool HasProperty(string properties, string property)
+    {
+        return properties.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Contains(property, StringComparer.Ordinal);
+    }
+    private static string DirectoryOf(string path)
+    {
+        return path[..Math.Max(0, path.LastIndexOf('/'))];
+    }
     private static string Join(string directory, string href)
     {
         var hash = href.IndexOf('#');
         var path = Uri.UnescapeDataString(hash >= 0 ? href[..hash] : href);
         return Normalize(string.Join('/', new[] { directory, path }.Where(value => value.Length > 0)));
     }
-    private static string Normalize(string path) => string.Join('/', path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries)
-        .Aggregate(new List<string>(), (parts, segment) =>
-        {
-            if (segment == ".") return parts;
-            if (segment == "..") { if (parts.Count > 0) parts.RemoveAt(parts.Count - 1); return parts; }
-            parts.Add(segment);
-            return parts;
-        }));
-    private static ZipArchiveEntry? FindEntry(ZipArchive archive, string path) =>
-        archive.GetEntry(path) ?? archive.Entries.FirstOrDefault(e => string.Equals(e.FullName, path, StringComparison.OrdinalIgnoreCase));
+    private static string Normalize(string path)
+    {
+        return string.Join('/', path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Aggregate(new List<string>(), (parts, segment) =>
+            {
+                if (segment == ".") return parts;
+
+                if (segment == "..")
+                {
+                    if (parts.Count > 0) parts.RemoveAt(parts.Count - 1);
+                    return parts;
+                }
+                parts.Add(segment);
+                return parts;
+            }));
+    }
+    private static ZipArchiveEntry? FindEntry(ZipArchive archive, string path)
+    {
+        return archive.GetEntry(path) ?? archive.Entries.FirstOrDefault(e => string.Equals(e.FullName, path, StringComparison.OrdinalIgnoreCase));
+    }
     private static XDocument ReadXml(ZipArchive archive, string path)
     {
         var entry = FindEntry(archive, path) ?? throw new InvalidDataException($"EPUB 中找不到文件：{path}");
+
         try
         {
             using var stream = entry.Open();
@@ -143,19 +166,23 @@ public sealed class EpubCoverExtractor : IEpubCoverExtractor
             using var buffer = new MemoryStream();
             stream.CopyTo(buffer);
             var bytes = buffer.ToArray();
+
             foreach (var encoding in new[] { Encoding.UTF8, Encoding.Unicode, Encoding.BigEndianUnicode })
             {
                 foreach (var quote in new[] { '"', '\'' })
                 {
                     var source = encoding.GetBytes($"version={quote}1.1{quote}");
                     var replacement = encoding.GetBytes($"version={quote}1.0{quote}");
+
                     for (var i = 0; i <= Math.Min(1024, bytes.Length - source.Length); i++)
+                    {
                         if (bytes.AsSpan(i, source.Length).SequenceEqual(source))
                         {
                             replacement.CopyTo(bytes, i);
                             using var retry = new MemoryStream(bytes, false);
                             return XDocument.Load(retry, LoadOptions.PreserveWhitespace);
                         }
+                    }
                 }
             }
             throw;

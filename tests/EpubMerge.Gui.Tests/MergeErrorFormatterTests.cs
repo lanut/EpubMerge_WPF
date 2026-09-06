@@ -58,7 +58,7 @@ public class MergeErrorFormatterTests
 
     private static string InvokeFormatter(Exception exception)
     {
-        var formatter = typeof(EpubMerge.Gui.MergeUiResult).Assembly
+        var formatter = typeof(MergeUiResult).Assembly
             .GetType("EpubMerge.Gui.MergeErrorFormatter")!;
         return (string)formatter.GetMethod("Format")!.Invoke(null, [exception])!;
     }

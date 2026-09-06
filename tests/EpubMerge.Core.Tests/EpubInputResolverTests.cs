@@ -19,7 +19,10 @@ public sealed class EpubInputResolverTests : IDisposable
         File.WriteAllText(Path.Combine(_directory, "nested", "nested.epub"), string.Empty);
     }
 
-    public void Dispose() => Directory.Delete(_directory, true);
+    public void Dispose()
+    {
+        Directory.Delete(_directory, true);
+    }
 
     [Fact]
     public void Resolve_expands_relative_wildcard_and_natural_sorts_by_file_name()
@@ -27,6 +30,7 @@ public sealed class EpubInputResolverTests : IDisposable
         lock (CurrentDirectoryLock)
         {
             var original = Environment.CurrentDirectory;
+
             try
             {
                 Directory.SetCurrentDirectory(_directory);
@@ -44,7 +48,7 @@ public sealed class EpubInputResolverTests : IDisposable
     [Fact]
     public void Resolve_scans_directory_recursively_and_name_sort_uses_file_names()
     {
-        var result = EpubInputResolver.Resolve([], _directory, recursive: true, sort: EpubSortMode.Name);
+        var result = EpubInputResolver.Resolve([], _directory, true, EpubSortMode.Name);
 
         Assert.Equal(["nested.epub", "Vol.01.epub", "Vol.10.epub", "Vol.2.epub"], result.Select(Path.GetFileName));
     }

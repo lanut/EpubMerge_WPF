@@ -3,7 +3,7 @@ using EpubMerge.Core.Pure;
 
 namespace EpubMerge.Gui;
 
-internal static class CliRunner
+static class CliRunner
 {
     private const string Version = "1.0.0";
 
@@ -13,14 +13,41 @@ internal static class CliRunner
     public static async Task<int> RunAsync(string[] args)
     {
         var parsed = Parse(args);
-        if (parsed.ShowHelp) { PrintHelp(); return 0; }
-        if (parsed.ShowVersion) { Console.WriteLine($"EpubMerge {Version}"); return 0; }
-        if (parsed.Error is not null) { Console.Error.WriteLine($"参数错误：{parsed.Error}"); Console.Error.WriteLine("使用 --help 查看帮助。"); return 1; }
+
+        if (parsed.ShowHelp)
+        {
+            PrintHelp();
+            return 0;
+        }
+
+        if (parsed.ShowVersion)
+        {
+            Console.WriteLine($"EpubMerge {Version}");
+            return 0;
+        }
+
+        if (parsed.Error is not null)
+        {
+            Console.Error.WriteLine($"参数错误：{parsed.Error}");
+            Console.Error.WriteLine("使用 --help 查看帮助。");
+            return 1;
+        }
 
         var inputs = EpubInputResolver.Resolve(parsed.Inputs, parsed.Directory, parsed.Recursive, parsed.SortMode);
-        if (inputs.Count == 0) { Console.Error.WriteLine("参数错误：没有找到有效的 EPUB 输入文件。"); return 1; }
-        if (string.IsNullOrWhiteSpace(parsed.Output)) { Console.Error.WriteLine("参数错误：必须指定 -o/--output。"); return 1; }
+
+        if (inputs.Count == 0)
+        {
+            Console.Error.WriteLine("参数错误：没有找到有效的 EPUB 输入文件。");
+            return 1;
+        }
+
+        if (string.IsNullOrWhiteSpace(parsed.Output))
+        {
+            Console.Error.WriteLine("参数错误：必须指定 -o/--output。");
+            return 1;
+        }
         var output = Path.GetFullPath(parsed.Output);
+
         if (inputs.Any(path => string.Equals(Path.GetFullPath(path), output, StringComparison.OrdinalIgnoreCase)))
         {
             Console.Error.WriteLine("参数错误：输出文件不能覆盖输入文件。");
@@ -35,8 +62,9 @@ internal static class CliRunner
         };
         Console.CancelKeyPress += cancelHandler;
 
-        string? coverPath = parsed.Cover;
+        var coverPath = parsed.Cover;
         string? temporaryCover = null;
+
         try
         {
             if (parsed.CoverFromIndex is not null)
@@ -47,7 +75,12 @@ internal static class CliRunner
                     return 1;
                 }
                 var cover = new EpubCoverExtractor().ExtractCover(inputs[parsed.CoverFromIndex.Value - 1]);
-                if (cover is null) { Console.Error.WriteLine("参数错误：指定的 EPUB 未包含有效封面图片。"); return 1; }
+
+                if (cover is null)
+                {
+                    Console.Error.WriteLine("参数错误：指定的 EPUB 未包含有效封面图片。");
+                    return 1;
+                }
                 temporaryCover = Path.Combine(Path.GetTempPath(), "EpubMerge", $"cli-cover-{Guid.NewGuid():N}{cover.SuggestedExtension}");
                 Directory.CreateDirectory(Path.GetDirectoryName(temporaryCover)!);
                 await File.WriteAllBytesAsync(temporaryCover, cover.ImageData);
@@ -108,28 +141,48 @@ internal static class CliRunner
     private static CliOptions Parse(string[] args)
     {
         var result = new CliOptions();
+
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
+
             switch (arg.ToLowerInvariant())
             {
-                case "-h": case "--help": result.ShowHelp = true; break;
+                case "-h":
+                case "--help": result.ShowHelp = true; break;
                 case "--version": result.ShowVersion = true; break;
-                case "-q": case "--quiet": result.Quiet = true; break;
-                case "-v": case "--verbose": result.Verbose = true; break;
-                case "-r": case "--recursive": result.Recursive = true; break;
-                case "-i": case "--input":
-                    while (i + 1 < args.Length && !IsOption(args[i + 1])) result.Inputs.Add(args[++i]);
+                case "-q":
+                case "--quiet": result.Quiet = true; break;
+                case "-v":
+                case "--verbose": result.Verbose = true; break;
+                case "-r":
+                case "--recursive": result.Recursive = true; break;
+                case "-i":
+                case "--input":
+                    while (i + 1 < args.Length && !IsOption(args[i + 1]))
+                    {
+                        result.Inputs.Add(args[++i]);
+                    }
                     if (result.Inputs.Count == 0) result.Error = "-i/--input 后缺少输入文件。";
                     break;
-                case "-d": case "--directory": result.Directory = NextValue(args, ref i, result); break;
-                case "-o": case "--output": result.Output = NextValue(args, ref i, result); break;
-                case "-t": case "--title": result.Title = NextValue(args, ref i, result); break;
+                case "-d":
+                case "--directory": result.Directory = NextValue(args, ref i, result); break;
+                case "-o":
+                case "--output": result.Output = NextValue(args, ref i, result); break;
+                case "-t":
+                case "--title": result.Title = NextValue(args, ref i, result); break;
                 case "--cover": result.Cover = NextValue(args, ref i, result); break;
                 case "--cover-from-index":
                     var value = NextValue(args, ref i, result);
-                    if (!int.TryParse(value, out var index)) result.Error ??= "--cover-from-index 必须是正整数。";
-                    else result.CoverFromIndex = index;
+
+                    if (!int.TryParse(value, out var index))
+                    {
+                        result.Error ??= "--cover-from-index 必须是正整数。";
+                    }
+                    else
+                    {
+                        result.CoverFromIndex = index;
+                    }
                     break;
                 case "--sort":
                     var mode = NextValue(args, ref i, result)?.ToLowerInvariant();
@@ -146,28 +199,45 @@ internal static class CliRunner
 
     private static string? NextValue(string[] args, ref int index, CliOptions result)
     {
-        if (index + 1 >= args.Length || IsOption(args[index + 1])) { result.Error ??= $"参数 {args[index]} 缺少值。"; return null; }
+        if (index + 1 >= args.Length || IsOption(args[index + 1]))
+        {
+            result.Error ??= $"参数 {args[index]} 缺少值。";
+            return null;
+        }
         return args[++index];
     }
-    private static bool IsOption(string value) => value.StartsWith("-", StringComparison.Ordinal);
-    private static void TryDelete(string path) { try { if (File.Exists(path)) File.Delete(path); } catch { } }
+    private static bool IsOption(string value)
+    {
+        return value.StartsWith("-", StringComparison.Ordinal);
+    }
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
+        catch { }
+    }
 
-    private static void PrintHelp() => Console.WriteLine("""
-用法：epubmerge.exe --cli -i <file1.epub> <file2.epub> -o <output.epub> [选项]
+    private static void PrintHelp()
+    {
+        Console.WriteLine("""
+                          用法：epubmerge.exe --cli -i <file1.epub> <file2.epub> -o <output.epub> [选项]
 
-  -i, --input <paths...>       输入 EPUB 文件、通配符或路径
-  -d, --directory <dir>        扫描目录中的 EPUB 文件
-  -r, --recursive              递归扫描目录
-  -o, --output <path>          输出 EPUB 路径（必需）
-  -t, --title <title>          合并书名
-      --cover <file>           外部封面图片
-      --cover-from-index <n>   使用第 N 本输入书的内置封面
-      --sort <mode>            natural、name 或 none
-  -q, --quiet                  仅输出错误
-  -v, --verbose                输出详细日志
-  -h, --help                   显示帮助
-      --version                显示版本
-""");
+                            -i, --input <paths...>       输入 EPUB 文件、通配符或路径
+                            -d, --directory <dir>        扫描目录中的 EPUB 文件
+                            -r, --recursive              递归扫描目录
+                            -o, --output <path>          输出 EPUB 路径（必需）
+                            -t, --title <title>          合并书名
+                                --cover <file>           外部封面图片
+                                --cover-from-index <n>   使用第 N 本输入书的内置封面
+                                --sort <mode>            natural、name 或 none
+                            -q, --quiet                  仅输出错误
+                            -v, --verbose                输出详细日志
+                            -h, --help                   显示帮助
+                                --version                显示版本
+                          """);
+    }
 
     private sealed class CliOptions
     {

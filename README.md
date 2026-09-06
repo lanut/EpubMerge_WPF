@@ -103,7 +103,8 @@ git tag V1.0.0
 git push origin V1.0.0
 ```
 
-工作流会在 Windows runner 上生成四个压缩包：`win-x64` 和 `win-arm64` 各自包含自包含版与依赖框架版，并自动创建 GitHub Release。依赖框架版需要目标机器安装 .NET 10 Desktop Runtime。
+工作流会在 Windows runner 上生成四个压缩包：`win-x64` 和 `win-arm64` 各自包含自包含版与依赖框架版，并自动创建 GitHub
+Release。依赖框架版需要目标机器安装 .NET 10 Desktop Runtime。
 
 ## 项目结构
 
