@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace EpubMerge.Gui;
 
+/// <summary>Initializes the WPF application and selects GUI or command-line startup mode.</summary>
 public partial class App : Application
 {
     [DllImport("kernel32.dll")]
@@ -10,6 +11,7 @@ public partial class App : Application
     [DllImport("kernel32.dll")]
     private static extern bool FreeConsole();
 
+    /// <summary>Initializes application resources and the persisted theme.</summary>
     public App()
     {
         InitializeComponent();
@@ -26,6 +28,7 @@ public partial class App : Application
             return;
         }
 
+        // A WinExe has no console by default; create one only for the explicit CLI entry point.
         AllocConsole();
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         try
@@ -41,6 +44,7 @@ public partial class App : Application
         finally { FreeConsole(); }
     }
 
+    /// <summary>Releases application-wide theme event handlers before shutdown.</summary>
     protected override void OnExit(ExitEventArgs e)
     {
         ThemeManager.Shutdown();

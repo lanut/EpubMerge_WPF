@@ -7,6 +7,9 @@ internal static class CliRunner
 {
     private const string Version = "1.0.0";
 
+    /// <summary>Parses CLI arguments, executes a merge, and returns a process exit code.</summary>
+    /// <param name="args">Arguments excluding the explicit <c>--cli</c> switch.</param>
+    /// <returns>Zero for success, one for invalid input, and two for cancellation or merge failure.</returns>
     public static async Task<int> RunAsync(string[] args)
     {
         var parsed = Parse(args);

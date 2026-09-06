@@ -3,5 +3,6 @@ using EpubMerge.Gui.Resources;
 
 namespace EpubMerge.Gui;
 
+/// <summary>Provides strongly typed keys for the generated localization resources.</summary>
 [ResourceKeysOf(typeof(Language))]
-public partial class LangKeys;
+public static partial class LangKeys;

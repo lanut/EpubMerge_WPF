@@ -8,11 +8,14 @@ using Microsoft.Win32;
 
 namespace EpubMerge.Gui;
 
+/// <summary>Hosts the merge workflow and translates WPF events into view-model operations.</summary>
 public partial class MainWindow : Window
 {
+    /// <summary>Initializes the window, view model, and selection-state bindings.</summary>
     public MainWindow()
     {
         InitializeComponent();
+        // Windows 11 22H2+ supports the Fluent backdrop; older hosts need an opaque fallback resource.
         if (!IsFluentBackdropSupported())
             SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
         DataContext = new MainViewModel();

@@ -5,6 +5,7 @@ namespace EpubMerge.Gui;
 
 internal static class MergeErrorFormatter
 {
+    /// <summary>Converts an exception into a localized, user-facing error category.</summary>
     public static string Format(Exception exception) => exception switch
     {
         ArgumentException => LanguageManager.Get("MergeErrorInvalidArguments"),

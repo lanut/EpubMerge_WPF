@@ -14,9 +14,9 @@ public class MergeErrorLoggerTests
         var request = new EpubMergeRequest(["input.epub"], output, "合辑");
 
         var logPath = InvokeLogger(request, new InvalidOperationException("internal detail"));
-
+        Assert.NotNull(logPath);
         Assert.Equal(Path.Combine(AppContext.BaseDirectory, "EpubMerge.error.log"), logPath);
-        var content = File.ReadAllText(logPath!);
+        var content = File.ReadAllText(logPath);
         Assert.Contains("input.epub", content);
         Assert.Contains("internal detail", content);
         Assert.Contains(output, content);

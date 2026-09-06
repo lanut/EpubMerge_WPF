@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Compression;
 using System.Security;
@@ -8,8 +9,10 @@ using System.Xml.Linq;
 namespace EpubMerge.Core.Pure;
 
 /// <summary>Creates a standards-compatible EPUB 3 container from one or more source EPUBs.</summary>
+/// <remarks>The implementation uses only the base class library and rejects encrypted EPUB resources.</remarks>
 public sealed class EpubMergeService : IEpubMergeService
 {
+    // ReSharper disable once InconsistentNaming
     private const string ContainerXml = """
                                         <?xml version="1.0" encoding="UTF-8"?>
                                         <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
@@ -19,6 +22,7 @@ public sealed class EpubMergeService : IEpubMergeService
                                         </container>
                                         """;
 
+    // ReSharper disable once InconsistentNaming
     private const string NavCss = """
                                   body { font-family: sans-serif; line-height: 1.5; }
                                   nav#toc ol { list-style-type: none; padding-left: 1.25em; }
@@ -26,6 +30,12 @@ public sealed class EpubMergeService : IEpubMergeService
                                   a { text-decoration: none; color: inherit; }
                                   """;
 
+    /// <summary>Merges source EPUBs asynchronously and writes the result atomically.</summary>
+    /// <param name="request">The source files, output path, title, and optional cover.</param>
+    /// <param name="progress">Optional progress reporter; reports source reading and copying.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the merged EPUB is ready at <paramref name="request"/>.<see cref="EpubMergeRequest.OutputPath"/>.</returns>
+    /// <remarks>A temporary file in the output directory is moved into place only after the ZIP is complete.</remarks>
     public Task MergeAsync(EpubMergeRequest request, IProgress<EpubMergeProgress>? progress = null,
         CancellationToken cancellationToken = default(CancellationToken))
     {
@@ -54,6 +64,7 @@ public sealed class EpubMergeService : IEpubMergeService
 
         try
         {
+            // Build the complete archive beside the destination so cancellation or a failed source never leaves a partial output.
             using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
             {
@@ -95,6 +106,7 @@ public sealed class EpubMergeService : IEpubMergeService
         var book = new Book(path, index, FindTitle(root, Path.GetFileNameWithoutExtension(path)), opfPath, opfDirectory,
             manifest, spine, FindCoverId(root, manifest));
 
+        // Content links are rewritten into a per-book directory; this keeps identical source names from colliding.
         foreach (var itemRef in spine)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -393,6 +405,7 @@ public sealed class EpubMergeService : IEpubMergeService
 
     private static List<TocNode> MergeToc(IEnumerable<Book> books)
     {
+        // Keep each source book as a top-level node so duplicate chapter titles remain distinguishable.
         return books.Select(book => new TocNode(book.Title,
             book.FirstContentHref.Length > 0 ? book.FirstContentHref : book.Toc.FirstOrDefault()?.Href ?? string.Empty, book.Toc)).ToList();
     }
@@ -560,6 +573,7 @@ public sealed class EpubMergeService : IEpubMergeService
 
     private static (string Path, string Fragment) JoinHref(string baseDirectory, string href)
     {
+        // Resolve links relative to their owning document and preserve #fragment targets separately.
         var hash = href.IndexOf('#');
         var path = Uri.UnescapeDataString(hash >= 0 ? href[..hash] : href);
         var fragment = hash >= 0 ? href[(hash + 1)..] : string.Empty;
@@ -638,7 +652,7 @@ public sealed class EpubMergeService : IEpubMergeService
     }
     private static string EscapeText(string? value)
     {
-        return SecurityElement.Escape(value ?? string.Empty) ?? string.Empty;
+        return SecurityElement.Escape(value ?? string.Empty);
     }
     private static string EscapeAttribute(string? value)
     {
@@ -661,6 +675,7 @@ public sealed class EpubMergeService : IEpubMergeService
     private sealed record SpineItem(string IdRef, string Linear);
     private sealed record TocNode(string Title, string Href, List<TocNode> Children);
 
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     private sealed class Book
     {
         public Book(string path, int index, string title, string opfPath, string opfDirectory, List<ManifestItem> manifest, List<SpineItem> spine, string coverId)

@@ -1,28 +1,49 @@
 namespace EpubMerge.Core.Pure;
 
+/// <summary>Describes the source EPUBs and metadata used for a merge operation.</summary>
+/// <param name="InputPaths">The EPUB files to merge, in reading order.</param>
+/// <param name="OutputPath">The destination EPUB path.</param>
+/// <param name="Title">The title written to the merged package metadata and navigation.</param>
+/// <param name="CoverPath">An optional external cover image path.</param>
 public sealed record EpubMergeRequest(
     IReadOnlyList<string> InputPaths,
     string OutputPath,
     string Title,
     string? CoverPath = null);
 
+/// <summary>Reports the number of source books processed by a merge operation.</summary>
+/// <param name="CompletedBooks">The number of completed books.</param>
+/// <param name="TotalBooks">The total number of books in the operation.</param>
+/// <param name="Message">A localized, human-readable progress message.</param>
 public sealed record EpubMergeProgress(int CompletedBooks, int TotalBooks, string Message);
 
+/// <summary>Provides asynchronous EPUB merging with cancellation and progress reporting.</summary>
 public interface IEpubMergeService
 {
+    /// <summary>Merges the requested EPUBs into a new EPUB file.</summary>
+    /// <param name="request">The merge input and output configuration.</param>
+    /// <param name="progress">Optional progress sink.</param>
+    /// <param name="cancellationToken">Token used to cancel reading or writing.</param>
+    /// <returns>A task that completes after the output has been written.</returns>
     Task MergeAsync(
         EpubMergeRequest request,
         IProgress<EpubMergeProgress>? progress = null,
         CancellationToken cancellationToken = default(CancellationToken));
 }
 
+/// <summary>Validates merge requests before any output is created.</summary>
 public static class EpubMergeValidator
 {
-    private static readonly HashSet<string> SupportedCoverExtensions = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> supportedCoverExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"
     };
 
+    /// <summary>Checks paths, extensions, collisions, and optional cover files.</summary>
+    /// <param name="request">The request to validate.</param>
+    /// <exception cref="ArgumentNullException">The request is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">A request value is invalid.</exception>
+    /// <exception cref="FileNotFoundException">An input or cover file does not exist.</exception>
     public static void Validate(EpubMergeRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -63,6 +84,7 @@ public static class EpubMergeValidator
             }
         }
 
+        // ReSharper disable once InvertIf
         if (!string.IsNullOrWhiteSpace(request.CoverPath))
         {
             if (!File.Exists(request.CoverPath))
@@ -70,7 +92,7 @@ public static class EpubMergeValidator
                 throw new FileNotFoundException($"找不到封面文件：{request.CoverPath}", request.CoverPath);
             }
 
-            if (!SupportedCoverExtensions.Contains(Path.GetExtension(request.CoverPath)))
+            if (!supportedCoverExtensions.Contains(Path.GetExtension(request.CoverPath)))
             {
                 throw new ArgumentException($"不支持的封面图片类型：{Path.GetExtension(request.CoverPath)}", nameof(request));
             }

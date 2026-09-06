@@ -5,16 +5,28 @@ using System.Xml.Linq;
 
 namespace EpubMerge.Core.Pure;
 
+/// <summary>Extracts cover images from EPUB package metadata.</summary>
 public interface IEpubCoverExtractor
 {
+    /// <summary>Attempts to extract the cover image declared by an EPUB package.</summary>
+    /// <param name="epubPath">Path to the source EPUB file.</param>
+    /// <returns>The image bytes and a suitable file extension, or <see langword="null"/> when no supported cover is found.</returns>
+    /// <exception cref="FileNotFoundException">The EPUB file does not exist.</exception>
+    /// <exception cref="NotSupportedException">The EPUB contains encrypted resources.</exception>
+    /// <exception cref="InvalidDataException">The EPUB package metadata is missing or invalid.</exception>
     ExtractedCover? ExtractCover(string epubPath);
 }
 
+/// <summary>Contains the bytes and media information of an extracted EPUB cover.</summary>
+/// <param name="ImageData">The complete image payload.</param>
+/// <param name="MimeType">The normalized MIME type of the image.</param>
+/// <param name="SuggestedExtension">The file extension suitable for saving the image.</param>
 public sealed record ExtractedCover(byte[] ImageData, string MimeType, string SuggestedExtension);
 
+/// <summary>Extracts supported cover images using only the EPUB package metadata and BCL APIs.</summary>
 public sealed class EpubCoverExtractor : IEpubCoverExtractor
 {
-    private static readonly IReadOnlyDictionary<string, (string MimeType, string Extension)> ImageTypes =
+    private static readonly IReadOnlyDictionary<string, (string MimeType, string Extension)> imageTypes =
         new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase)
         {
             ["image/jpeg"] = ("image/jpeg", ".jpg"),
@@ -25,6 +37,13 @@ public sealed class EpubCoverExtractor : IEpubCoverExtractor
             ["image/svg+xml"] = ("image/svg+xml", ".svg")
         };
 
+    /// <summary>Reads the cover declaration from an EPUB and returns the referenced image.</summary>
+    /// <param name="epubPath">Path to the source EPUB file.</param>
+    /// <returns>The extracted cover, or <see langword="null"/> when the package has no usable supported cover.</returns>
+    /// <remarks>Cover discovery checks EPUB 3 <c>cover-image</c>, EPUB 2 cover metadata, and common cover names.</remarks>
+    /// <exception cref="ArgumentException">The path is empty or consists only of whitespace.</exception>
+    /// <exception cref="FileNotFoundException">The EPUB file does not exist.</exception>
+    /// <exception cref="NotSupportedException">The EPUB contains <c>META-INF/encryption.xml</c>.</exception>
     public ExtractedCover? ExtractCover(string epubPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(epubPath);
@@ -76,7 +95,7 @@ public sealed class EpubCoverExtractor : IEpubCoverExtractor
 
     private static bool TryGetImageType(string mediaType, string href, out (string MimeType, string Extension) type)
     {
-        if (ImageTypes.TryGetValue(mediaType, out type)) return true;
+        if (imageTypes.TryGetValue(mediaType, out type)) return true;
         var extension = Path.GetExtension(href).ToLowerInvariant();
         type = extension switch
         {
@@ -125,17 +144,19 @@ public sealed class EpubCoverExtractor : IEpubCoverExtractor
             stream.CopyTo(buffer);
             var bytes = buffer.ToArray();
             foreach (var encoding in new[] { Encoding.UTF8, Encoding.Unicode, Encoding.BigEndianUnicode })
-            foreach (var quote in new[] { '"', '\'' })
             {
-                var source = encoding.GetBytes($"version={quote}1.1{quote}");
-                var replacement = encoding.GetBytes($"version={quote}1.0{quote}");
-                for (var i = 0; i <= Math.Min(1024, bytes.Length - source.Length); i++)
-                    if (bytes.AsSpan(i, source.Length).SequenceEqual(source))
-                    {
-                        replacement.CopyTo(bytes, i);
-                        using var retry = new MemoryStream(bytes, false);
-                        return XDocument.Load(retry, LoadOptions.PreserveWhitespace);
-                    }
+                foreach (var quote in new[] { '"', '\'' })
+                {
+                    var source = encoding.GetBytes($"version={quote}1.1{quote}");
+                    var replacement = encoding.GetBytes($"version={quote}1.0{quote}");
+                    for (var i = 0; i <= Math.Min(1024, bytes.Length - source.Length); i++)
+                        if (bytes.AsSpan(i, source.Length).SequenceEqual(source))
+                        {
+                            replacement.CopyTo(bytes, i);
+                            using var retry = new MemoryStream(bytes, false);
+                            return XDocument.Load(retry, LoadOptions.PreserveWhitespace);
+                        }
+                }
             }
             throw;
         }
