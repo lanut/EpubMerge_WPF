@@ -203,6 +203,21 @@ public sealed class EpubMergeServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MergeAsync_reports_the_path_for_a_truncated_epub()
+    {
+        var input = Path.Combine(_directory, "truncated.epub");
+        await File.WriteAllBytesAsync(input, [80, 75, 3, 4]);
+        var output = Path.Combine(_directory, "truncated-output.epub");
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new EpubMergeService().MergeAsync(new EpubMergeRequest([input], output, "损坏合辑")));
+
+        Assert.Contains(input, exception.Message);
+        Assert.Contains("仍在写入或已损坏", exception.Message);
+        Assert.False(File.Exists(output));
+    }
+
+    [Fact]
     public async Task MergeAsync_omits_navigation_document_from_spine()
     {
         var input = CreateEpubWithNavInSpine("nav-in-spine.epub");

@@ -1,15 +1,16 @@
 <Solution>
     <Folder Name="/PublishScript/">
-        <File Path="publish.ps1"/>
+        <File Path="publish.ps1" />
     </Folder>
     <Folder Name="/Read me and license/">
-        <File Path="LICENSE"/>
-        <File Path="README.md"/>
+        <File Path="LICENSE" />
+        <File Path="README.md" />
+        <File Path="RELEASE_NOTES.md" />
     </Folder>
-    <Project Path="src/EpubMerge.Core.Pure/EpubMerge.Core.Pure.csproj"/>
-    <Project Path="src/EpubMerge.Cli/EpubMerge.Cli.csproj"/>
-    <Project Path="src/EpubMerge.Gui/EpubMerge.Gui.csproj"/>
-    <Project Path="tests/EpubMerge.Core.Tests/EpubMerge.Core.Tests.csproj"/>
-    <Project Path="tests/EpubMerge.Cli.Tests/EpubMerge.Cli.Tests.csproj"/>
-    <Project Path="tests/EpubMerge.Gui.Tests/EpubMerge.Gui.Tests.csproj"/>
+    <Project Path="src/EpubMerge.Core.Pure/EpubMerge.Core.Pure.csproj" />
+    <Project Path="src/EpubMerge.Cli/EpubMerge.Cli.csproj" />
+    <Project Path="src/EpubMerge.Gui/EpubMerge.Gui.csproj" />
+    <Project Path="tests/EpubMerge.Core.Tests/EpubMerge.Core.Tests.csproj" />
+    <Project Path="tests/EpubMerge.Cli.Tests/EpubMerge.Cli.Tests.csproj" />
+    <Project Path="tests/EpubMerge.Gui.Tests/EpubMerge.Gui.Tests.csproj" />
 </Solution>

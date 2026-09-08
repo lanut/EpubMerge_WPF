@@ -7,7 +7,7 @@ namespace EpubMerge.Cli;
 /// <summary>Runs the EPUB merge command-line application.</summary>
 public static class CliRunner
 {
-    private const string Version = "1.0.0";
+    private const string Version = "1.1.0";
 
     /// <summary>Parses arguments, runs the merge, writes output, and returns a process exit code.</summary>
     public static async Task<int> RunAsync(

@@ -12,6 +12,9 @@ namespace EpubMerge.Core.Pure;
 /// <remarks>The implementation uses only the base class library and rejects encrypted EPUB resources.</remarks>
 public sealed class EpubMergeService : IEpubMergeService
 {
+    private const int MaxArchiveOpenAttempts = 5;
+    private static readonly TimeSpan ArchiveOpenRetryDelay = TimeSpan.FromMilliseconds(250);
+
     // ReSharper disable once InconsistentNaming
     private const string ContainerXml = """
                                         <?xml version="1.0" encoding="UTF-8"?>
@@ -99,7 +102,7 @@ public sealed class EpubMergeService : IEpubMergeService
 
     private static Book ReadBook(string path, int index, CancellationToken cancellationToken)
     {
-        using var archive = ZipFile.OpenRead(path);
+        using var archive = OpenArchiveWithRetry(path, cancellationToken);
         RejectEncryptedEpub(archive, path);
         var opfPath = FindRootFile(archive);
         var opfDirectory = PosixDirectory(opfPath);
@@ -145,6 +148,43 @@ public sealed class EpubMergeService : IEpubMergeService
             book.Toc = BuildFallbackToc(book, archive);
         }
         return book;
+    }
+
+    private static ZipArchive OpenArchiveWithRetry(string path, CancellationToken cancellationToken)
+    {
+        Exception? lastException = null;
+
+        for (var attempt = 1; attempt <= MaxArchiveOpenAttempts; attempt++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                return ZipFile.OpenRead(path);
+            }
+            catch (InvalidDataException exception)
+            {
+                lastException = exception;
+            }
+            catch (IOException exception)
+            {
+                lastException = exception;
+            }
+
+            if (attempt < MaxArchiveOpenAttempts)
+            {
+                cancellationToken.WaitHandle.WaitOne(ArchiveOpenRetryDelay);
+            }
+        }
+
+        throw lastException switch
+        {
+            InvalidDataException exception => new InvalidDataException(
+                $"无法读取 EPUB 文件：{path}。文件可能仍在写入或已损坏。", exception),
+            IOException exception => new IOException(
+                $"无法打开 EPUB 文件：{path}。文件可能仍被其他程序占用。", exception),
+            _ => new InvalidDataException($"无法读取 EPUB 文件：{path}。")
+        };
     }
 
     private static string FindRootFile(ZipArchive archive)

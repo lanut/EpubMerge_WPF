@@ -52,4 +52,19 @@ public sealed class EpubInputResolverTests : IDisposable
 
         Assert.Equal(["nested.epub", "Vol.01.epub", "Vol.10.epub", "Vol.2.epub"], result.Select(Path.GetFileName));
     }
+
+    [Fact]
+    public void Resolve_natural_sorts_decimal_chapter_names_by_numeric_segments()
+    {
+        File.WriteAllText(Path.Combine(_directory, "第1.10章.epub"), string.Empty);
+        File.WriteAllText(Path.Combine(_directory, "第1.2章.epub"), string.Empty);
+        File.WriteAllText(Path.Combine(_directory, "第1.9章.epub"), string.Empty);
+        File.WriteAllText(Path.Combine(_directory, "第1.1章.epub"), string.Empty);
+
+        var result = EpubInputResolver.Resolve([], _directory);
+
+        Assert.Equal(
+            ["第1.1章.epub", "第1.2章.epub", "第1.9章.epub", "第1.10章.epub"],
+            result.Select(path => Path.GetFileName(path)!).Where(name => name.StartsWith("第", StringComparison.Ordinal)));
+    }
 }
