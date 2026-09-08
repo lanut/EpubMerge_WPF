@@ -1,0 +1,7 @@
+{
+  "version": "1.0.3",
+  "category": "Core",
+  "packages": [
+    "Microsoft.Extensions.Hosting"
+  ]
+}
