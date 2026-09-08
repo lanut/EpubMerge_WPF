@@ -54,7 +54,7 @@ public sealed class EpubMergeService : IEpubMergeService
         for (var i = 0; i < request.InputPaths.Count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            progress?.Report(new EpubMergeProgress(i, request.InputPaths.Count, $"正在读取第 {i + 1} 本 EPUB…"));
+            progress?.Report(new EpubMergeProgress(i, request.InputPaths.Count, $"正在读取第 {i + 1} 本 EPUB…", EpubMergeProgressStage.Reading));
             books.Add(ReadBook(request.InputPaths[i], i + 1, cancellationToken));
         }
 
@@ -85,7 +85,7 @@ public sealed class EpubMergeService : IEpubMergeService
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     AddSourceFiles(archive, books[i], written, cancellationToken);
-                    progress?.Report(new EpubMergeProgress(i + 1, books.Count, $"已合并 {i + 1}/{books.Count} 本 EPUB"));
+                    progress?.Report(new EpubMergeProgress(i + 1, books.Count, $"已合并 {i + 1}/{books.Count} 本 EPUB", EpubMergeProgressStage.Merging));
                 }
             }
 

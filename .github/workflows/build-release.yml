@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -57,16 +57,23 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish
         shell: pwsh
-        run: .\publish.ps1 -RuntimeIdentifier ${{ matrix.runtime }} -DeploymentMode ${{ matrix.mode }} -Configuration Release -Clean
+        run: .\publish.ps1 -RuntimeIdentifier ${{ matrix.runtime }} -DeploymentMode ${{ matrix.mode }} -Configuration Release -ExcludeXmlAndPdb -Clean
+
+      - name: Smoke test CLI
+        shell: pwsh
+        run: |
+          $modeDirectory = if ('${{ matrix.mode }}' -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
+          & "publish\${{ matrix.runtime }}\$modeDirectory\EpubMerge.Cli.exe" --help
+          if ($LASTEXITCODE -ne 0) { throw "CLI help command failed with exit code $LASTEXITCODE." }
 
       - name: Create archive
         shell: pwsh
@@ -97,4 +104,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          body_path: RELEASE_NOTES.md
           files: artifacts/*.zip

@@ -51,12 +51,12 @@
 
 ## CLI 命令行模式
 
-发布的 GUI 程序同时支持命令行模式，不会创建窗口。使用 `--cli` 或 `-c` 开关进入 CLI：
+发布包中的 CLI 程序独立于 GUI，不会创建窗口。GUI 和 CLI 位于同一个架构/部署模式目录中：
 
 ```powershell
-EpubMerge.Gui.exe --cli -i .\vol*.epub -o .\merged.epub --title "合辑"
-EpubMerge.Gui.exe -c -d .\books -r -o .\merged.epub --sort natural
-EpubMerge.Gui.exe --cli -i .\one.epub .\two.epub -o .\merged.epub --cover-from-index 1
+EpubMerge.Cli.exe -i .\vol*.epub -o .\merged.epub --title "合辑"
+EpubMerge.Cli.exe -d .\books -r -o .\merged.epub --sort natural
+EpubMerge.Cli.exe -i .\one.epub .\two.epub -o .\merged.epub --cover-from-index 1
 ```
 
 常用选项：
@@ -66,10 +66,13 @@ EpubMerge.Gui.exe --cli -i .\one.epub .\two.epub -o .\merged.epub --cover-from-i
 - `-o`/`--output`：输出 EPUB 路径（必需）
 - `--cover`：指定外部封面图片；或使用 `--cover-from-index N` 选择第 N 本书的内置封面
 - `--sort natural|name|none`：自然排序、名称排序或保持输入顺序
+- `--progress bar|plain|jsonl`：动态进度条、稳定文本行或 JSONL 进度事件；默认在重定向输出时自动使用文本行
 - `-q`/`--quiet`、`-v`/`--verbose`：控制日志输出
 - `-h`/`--help`、`--version`：显示帮助或版本
 
 CLI 退出码为 `0`（成功）、`1`（参数或输入校验失败）和 `2`（运行期异常或取消）。
+`--quiet` 不输出进度和成功摘要，错误仍写入标准错误流。`plain` 模式输出类似
+`PROGRESS phase=merging completed=1 total=3` 的换行记录；`jsonl` 模式每行输出一个可解析的 JSON 对象。
 
 ## 运行环境
 
@@ -92,6 +95,12 @@ dotnet test EpubMerge.slnx
 dotnet run --project src/EpubMerge.Gui/EpubMerge.Gui.csproj
 ```
 
+运行 CLI：
+
+```powershell
+dotnet run --project src/EpubMerge.Cli/EpubMerge.Cli.csproj -- --help
+```
+
 ## GitHub Actions 发布
 
 仓库包含 GitHub Actions 工作流。推送到 `master` 或提交 Pull Request 时会自动恢复、构建并运行测试。
@@ -103,17 +112,20 @@ git tag V1.0.0
 git push origin V1.0.0
 ```
 
-工作流会在 Windows runner 上生成四个压缩包：`win-x64` 和 `win-arm64` 各自包含自包含版与依赖框架版，并自动创建 GitHub
-Release。依赖框架版需要目标机器安装 .NET 10 Desktop Runtime。
+推送标签前，请先更新根目录下的 `RELEASE_NOTES.md`，填写本次版本的实际变更。工作流会将该文件写入 GitHub Release 描述，并附加 GitHub 自动生成的提交说明。
+
+工作流会在 Windows runner 上生成四个压缩包：`win-x64` 和 `win-arm64` 各自包含自包含版与依赖框架版。每个压缩包的同一目录中同时包含 GUI 和 CLI，后续也可放置共享配置文件。依赖框架版需要目标机器安装 .NET 10 Desktop Runtime。
 
 ## 项目结构
 
 ```text
 src/
   EpubMerge.Core.Pure/  EPUB 校验与合并核心逻辑
+  EpubMerge.Cli/        独立命令行程序
   EpubMerge.Gui/        WPF 图形界面
  tests/
   EpubMerge.Core.Tests/ 核心逻辑测试
+  EpubMerge.Cli.Tests/   CLI 输出与行为测试
   EpubMerge.Gui.Tests/  界面 ViewModel 测试
 readmeRef/              README 截图
 ```

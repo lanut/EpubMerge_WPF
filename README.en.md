@@ -53,12 +53,12 @@ The output file must use the `.epub` extension and must not overwrite an input f
 
 ## CLI mode
 
-The published GUI executable also supports command-line mode without creating a window. Use `--cli` or `-c` to enter CLI mode:
+The published package contains a standalone CLI executable that does not create a window. The GUI and CLI are published into the same architecture/deployment directory:
 
 ```powershell
-EpubMerge.Gui.exe --cli -i .\vol*.epub -o .\merged.epub --title "Collection"
-EpubMerge.Gui.exe -c -d .\books -r -o .\merged.epub --sort natural
-EpubMerge.Gui.exe --cli -i .\one.epub .\two.epub -o .\merged.epub --cover-from-index 1
+EpubMerge.Cli.exe -i .\vol*.epub -o .\merged.epub --title "Collection"
+EpubMerge.Cli.exe -d .\books -r -o .\merged.epub --sort natural
+EpubMerge.Cli.exe -i .\one.epub .\two.epub -o .\merged.epub --cover-from-index 1
 ```
 
 Common options:
@@ -68,10 +68,13 @@ Common options:
 - `-o`/`--output`: output EPUB path (required)
 - `--cover`: specify an external cover image, or use `--cover-from-index N` to select an embedded cover from the Nth book
 - `--sort natural|name|none`: natural sort, name sort, or preserve input order
+- `--progress bar|plain|jsonl`: interactive progress bar, stable line records, or JSONL progress events; redirected output automatically falls back to line records by default
 - `-q`/`--quiet`, `-v`/`--verbose`: control log output
 - `-h`/`--help`, `--version`: display help or version information
 
 CLI exit codes are `0` (success), `1` (argument or input validation failure), and `2` (runtime error or cancellation).
+`--quiet` suppresses progress and success output while keeping errors on stderr. `plain` emits line-oriented records such as
+`PROGRESS phase=merging completed=1 total=3`; `jsonl` emits one parseable JSON object per line.
 
 ## Requirements
 
@@ -94,6 +97,12 @@ Run the GUI project:
 dotnet run --project src/EpubMerge.Gui/EpubMerge.Gui.csproj
 ```
 
+Run the CLI project:
+
+```powershell
+dotnet run --project src/EpubMerge.Cli/EpubMerge.Cli.csproj -- --help
+```
+
 ## GitHub Actions release
 
 The repository includes a GitHub Actions workflow. Pushing to `master` or opening a pull request automatically restores dependencies, builds the project, and runs the tests.
@@ -105,16 +114,20 @@ git tag V1.0.0
 git push origin V1.0.0
 ```
 
-The workflow creates four archives on a Windows runner: self-contained and framework-dependent packages for both `win-x64` and `win-arm64`. Framework-dependent packages require the .NET 10 Desktop Runtime on the target machine.
+Before pushing the tag, update `RELEASE_NOTES.md` in the repository root with the user-visible changes for that version. The workflow writes this file to the GitHub Release description and appends GitHub-generated commit notes.
+
+The workflow creates four archives on a Windows runner: self-contained and framework-dependent packages for both `win-x64` and `win-arm64`. Each archive places the GUI and CLI in the same directory, which also provides a location for future shared configuration. Framework-dependent packages require the .NET 10 Desktop Runtime on the target machine.
 
 ## Project structure
 
 ```text
 src/
   EpubMerge.Core.Pure/  EPUB validation and merge logic
+  EpubMerge.Cli/        Standalone command-line application
   EpubMerge.Gui/        WPF graphical interface
 tests/
   EpubMerge.Core.Tests/ Core logic tests
+  EpubMerge.Cli.Tests/   CLI behavior and output tests
   EpubMerge.Gui.Tests/  ViewModel tests
 readmeRef/              README screenshots
 ```

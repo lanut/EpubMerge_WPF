@@ -351,7 +351,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     private void UpdateProgress(EpubMergeProgress value)
     {
-        var isReading = value.Message.StartsWith("正在读取", StringComparison.Ordinal);
+        var isReading = value.Stage == EpubMergeProgressStage.Reading;
         ProgressTotal = value.TotalBooks;
         ProgressCompleted = isReading ? 0 : Math.Clamp(value.CompletedBooks, 0, value.TotalBooks);
         ProgressCountText = $"{ProgressCompleted} / {ProgressTotal}";

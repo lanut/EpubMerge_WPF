@@ -11,11 +11,25 @@ public sealed record EpubMergeRequest(
     string Title,
     string? CoverPath = null);
 
+/// <summary>Identifies the current stage of a merge operation.</summary>
+public enum EpubMergeProgressStage
+{
+    /// <summary>The source EPUBs are being read and parsed.</summary>
+    Reading,
+    /// <summary>The merged EPUB is being written.</summary>
+    Merging
+}
+
 /// <summary>Reports the number of source books processed by a merge operation.</summary>
 /// <param name="CompletedBooks">The number of completed books.</param>
 /// <param name="TotalBooks">The total number of books in the operation.</param>
 /// <param name="Message">A localized, human-readable progress message.</param>
-public sealed record EpubMergeProgress(int CompletedBooks, int TotalBooks, string Message);
+/// <param name="Stage">The stable, presentation-neutral stage identifier.</param>
+public sealed record EpubMergeProgress(
+    int CompletedBooks,
+    int TotalBooks,
+    string Message,
+    EpubMergeProgressStage Stage = EpubMergeProgressStage.Merging);
 
 /// <summary>Provides asynchronous EPUB merging with cancellation and progress reporting.</summary>
 public interface IEpubMergeService

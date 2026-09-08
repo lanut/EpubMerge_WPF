@@ -47,6 +47,21 @@ public sealed class EpubMergeServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MergeAsync_reports_structured_progress_stages()
+    {
+        var first = CreateEpub("progress-one.epub", "进度一", TocType.Nav, "第一章");
+        var output = Path.Combine(_directory, "progress-output.epub");
+        var reports = new List<EpubMergeProgress>();
+
+        await new EpubMergeService().MergeAsync(
+            new EpubMergeRequest([first], output, "进度"),
+            new Progress<EpubMergeProgress>(reports.Add));
+
+        Assert.Contains(reports, report => report.Stage == EpubMergeProgressStage.Reading);
+        Assert.Contains(reports, report => report.Stage == EpubMergeProgressStage.Merging);
+    }
+
+    [Fact]
     public async Task MergeAsync_reads_ncx_and_adds_manual_cover()
     {
         var input = CreateEpub("ncx.epub", "NCX 册", TocType.Ncx, "NCX 章节");

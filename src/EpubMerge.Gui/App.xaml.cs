@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
 using EpubMerge.Core.Pure;
 
@@ -14,41 +12,16 @@ public partial class App : Application
         InitializeComponent();
         ThemeManager.Initialize();
     }
-    [DllImport("kernel32.dll")]
-    private static extern bool AllocConsole();
-    [DllImport("kernel32.dll")]
-    private static extern bool FreeConsole();
-
-    private async void Application_Startup(object sender, StartupEventArgs e)
+    private void Application_Startup(object sender, StartupEventArgs e)
     {
-        if (!e.Args.Any(arg => string.Equals(arg, "--cli", StringComparison.OrdinalIgnoreCase) || string.Equals(arg, "-c", StringComparison.OrdinalIgnoreCase)))
-        {
-            var viewModel = new MainViewModel(
-                new EpubMergeService(),
-                new EpubCoverExtractor(),
-                new FileMergeHistoryStore(),
-                new FileTemporaryCoverStore());
-            var window = new MainWindow(viewModel);
-            MainWindow = window;
-            window.Show();
-            return;
-        }
-
-        // A WinExe has no console by default; create one only for the explicit CLI entry point.
-        AllocConsole();
-        Console.OutputEncoding = Encoding.UTF8;
-
-        try
-        {
-            var cliArgs = e.Args.Where(arg => !string.Equals(arg, "--cli", StringComparison.OrdinalIgnoreCase) && !string.Equals(arg, "-c", StringComparison.OrdinalIgnoreCase)).ToArray();
-            Shutdown(await CliRunner.RunAsync(cliArgs));
-        }
-        catch (Exception exception)
-        {
-            Console.Error.WriteLine($"未处理错误：{exception.Message}");
-            Shutdown(2);
-        }
-        finally { FreeConsole(); }
+        var viewModel = new MainViewModel(
+            new EpubMergeService(),
+            new EpubCoverExtractor(),
+            new FileMergeHistoryStore(),
+            new FileTemporaryCoverStore());
+        var window = new MainWindow(viewModel);
+        MainWindow = window;
+        window.Show();
     }
 
     /// <summary>Releases application-wide theme event handlers before shutdown.</summary>
