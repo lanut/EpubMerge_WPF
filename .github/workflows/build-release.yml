@@ -69,11 +69,20 @@ jobs:
         run: .\publish.ps1 -RuntimeIdentifier ${{ matrix.runtime }} -DeploymentMode ${{ matrix.mode }} -Configuration Release -ExcludeXmlAndPdb -Clean
 
       - name: Smoke test CLI
+        if: matrix.runtime == 'win-x64'
         shell: pwsh
         run: |
           $modeDirectory = if ('${{ matrix.mode }}' -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
           & "publish\${{ matrix.runtime }}\$modeDirectory\EpubMerge.Cli.exe" --help
           if ($LASTEXITCODE -ne 0) { throw "CLI help command failed with exit code $LASTEXITCODE." }
+
+      - name: Validate ARM64 CLI artifact
+        if: matrix.runtime == 'win-arm64'
+        shell: pwsh
+        run: |
+          $modeDirectory = if ('${{ matrix.mode }}' -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
+          $cliPath = "publish\${{ matrix.runtime }}\$modeDirectory\EpubMerge.Cli.exe"
+          if (-not (Test-Path -LiteralPath $cliPath -PathType Leaf)) { throw "CLI artifact was not found: $cliPath" }
 
       - name: Create archive
         shell: pwsh
