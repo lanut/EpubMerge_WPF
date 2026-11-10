@@ -6,7 +6,8 @@
         <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
         <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
         <UseWinUI>true</UseWinUI>
-        <WindowsPackageType>None</WindowsPackageType>
+        <WindowsPackageType Condition="'$(StorePackage)' != 'true'">None</WindowsPackageType>
+        <WindowsPackageType Condition="'$(StorePackage)' == 'true'">MSIX</WindowsPackageType>
         <EnableMsixTooling>true</EnableMsixTooling>
         <WinUISDKReferences>false</WinUISDKReferences>
         <Platforms>x64;ARM64</Platforms>
@@ -18,7 +19,27 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+        <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**</DefaultItemExcludes>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(StorePackage)' == 'true'">
+        <SelfContained>true</SelfContained>
+        <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+        <PublishSingleFile>false</PublishSingleFile>
+        <PublishTrimmed>false</PublishTrimmed>
+        <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+        <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+        <AppxAutoIncrementPackageRevision>false</AppxAutoIncrementPackageRevision>
+        <AppxBundle>Never</AppxBundle>
+        <UapAppxPackageBuildMode>StoreUpload</UapAppxPackageBuildMode>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(StorePackage)' == 'true'">
+        <AppxManifest Include="$(StoreManifestPath)" />
+        <Content Include="Assets\Store\*.png" />
+    </ItemGroup>
+    <Target Name="ValidateStoreManifest" BeforeTargets="PrepareForBuild" Condition="'$(StorePackage)' == 'true'">
+        <Error Condition="'$(StoreManifestPath)' == '' or !Exists('$(StoreManifestPath)')"
+               Text="Build Store packages using publish-store.ps1, which validates the identity and generates the manifest." />
+    </Target>
     <ItemGroup>
         <ProjectReference Include="..\EpubMerge.Presentation\EpubMerge.Presentation.csproj" />
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.6.5" />

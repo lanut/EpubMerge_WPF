@@ -1,0 +1,77 @@
+name: Build Microsoft Store packages
+
+on:
+  push:
+    tags:
+      - 'V*'
+  workflow_dispatch:
+    inputs:
+      package_version:
+        description: 'Store version: Major.Minor.Build.0 (for example 1.2.3.0)'
+        type: string
+        required: true
+      demo:
+        description: 'Use DEMO identity; never upload this package to Partner Center'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Validate packaging failure cases
+        shell: pwsh
+        run: .\tests\Packaging\StorePackaging.Tests.ps1
+      - name: Build and test both GUIs
+        shell: pwsh
+        run: |
+          dotnet build EpubMerge.slnx -c Release -p:Platform=x64
+          if ($LASTEXITCODE -ne 0) { throw 'Solution build failed.' }
+          dotnet test EpubMerge.slnx -c Release -p:Platform=x64 --no-build
+          if ($LASTEXITCODE -ne 0) { throw 'Solution tests failed.' }
+
+  package:
+    needs: test
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [win-x64, win-arm64]
+    env:
+      REQUESTED_VERSION: ${{ inputs.package_version }}
+      DEMO_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.demo }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - uses: microsoft/setup-msbuild@v2
+      - name: Build and validate unsigned MSIX
+        shell: pwsh
+        run: |
+          $version = $env:REQUESTED_VERSION
+          if ($env:GITHUB_EVENT_NAME -eq 'push') {
+            if ($env:GITHUB_REF_NAME -notmatch '^V([1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') {
+              throw 'Store tags must be VMajor.Minor.Build (for example V1.2.3). ZIP publishing is independent.'
+            }
+            $version = "$($Matches[1]).$($Matches[2]).$($Matches[3]).0"
+          }
+          $demo = $env:DEMO_MODE -eq 'true'
+          .\publish-store.ps1 -RuntimeIdentifier '${{ matrix.runtime }}' -PackageVersion $version -Demo:$demo
+      - name: Upload Store submission artifacts (not a public Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix-${{ github.event_name == 'workflow_dispatch' && inputs.demo && 'DEMO-NOT-FOR-STORE' || 'STORE' }}-${{ matrix.runtime }}-${{ github.run_number }}
+          path: publish\msix\**
+          if-no-files-found: error
+          retention-days: 14

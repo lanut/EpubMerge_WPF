@@ -138,7 +138,20 @@ cli\EpubMerge.Cli.exe
 
 三个目录隔离依赖。WinUI 必须连同整个 `winui` 目录分发，不是单文件程序；WPF 和 CLI 保留单文件托管程序集打包策略，仍需保留同目录附带的原生依赖。自包含模式携带各宿主所需的运行时。
 
-开发机需 .NET 10 SDK、VS WinUI 开发工具及 Windows SDK 26100；`global.json` 排除预览 SDK。本地无需 ARM 工具。本阶段不启用 AOT、不生成商店 MSIX，后续在 GitHub Actions 增加。
+开发机需 .NET 10 SDK、VS WinUI 开发工具及 Windows SDK 26100；`global.json` 排除预览 SDK。本地无需 ARM 工具。本阶段不启用 AOT。
+
+## Microsoft Store MSIX
+
+WinUI 支持独立的单项目 MSIX 模式；GitHub Release 仍只发布上述非打包 ZIP。商店包内置 .NET，Windows App SDK 通过商店框架依赖部署，不包含 WPF 或 CLI。
+
+```powershell
+# 尚无商店身份时，显式生成演练包，不可用于正式上架。
+.\publish-store.ps1 -PackageVersion 1.2.3.0 -RuntimeIdentifier win-x64 -Demo
+```
+
+独立的 **Build Microsoft Store packages** Workflow 可手动构建演练/正式包，`V1.2.3` 标签自动构建 `1.2.3.0` 正式包。产物仅保存在 Actions artifacts，不自动提交商店，也不附加到 GitHub Release。未填写真实身份时正式包构建会明确失败，不影响独立 ZIP 发布。
+
+**在其他电脑继续配置及人工首发，请按 [Microsoft Store 指南](docs/MICROSOFT-STORE.md) 操作。** 包括产品创建、身份配置、版本、签名/本地测试、工件下载及 Partner Center 首次提交。
 
 ## 项目结构
 
@@ -147,13 +160,16 @@ src/
   EpubMerge.Core.Pure/  EPUB 校验与合并核心逻辑
   EpubMerge.Cli/        独立命令行程序
   EpubMerge.Gui/        原版 WPF 图形界面，独立 ViewModel/资源
-  EpubMerge.Gui.WinUI/  非打包 WinUI 3 图形界面
+  EpubMerge.Gui.WinUI/  WinUI 3，默认非打包，支持显式商店 MSIX
   EpubMerge.Presentation/ WinUI 使用的可测试 ViewModel、本地化与数据存储
 tests/
   EpubMerge.Core.Tests/ 核心逻辑测试
   EpubMerge.Cli.Tests/   CLI 输出与行为测试
   EpubMerge.Gui.Tests/  原版 WPF ViewModel 测试
   EpubMerge.Presentation.Tests/ WinUI 展示层测试（不加载 GUI 框架）
+  Packaging/           商店配置失败场景测试
+packaging/             待填写的商店身份配置
+docs/                  跨电脑配置与首发指南
 readmeRef/              README 截图
 ```
 

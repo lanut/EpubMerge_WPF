@@ -140,7 +140,20 @@ cli\EpubMerge.Cli.exe
 
 Dependencies are isolated across the three directories. Distribute the entire `winui` directory: WinUI is not a single-file executable. WPF and CLI retain single-file managed assembly bundling; keep any accompanying native dependencies. Self-contained packages include the runtimes required by each host.
 
-Development requires the .NET 10 SDK, Visual Studio WinUI tools and Windows SDK 26100. `global.json` excludes preview SDKs. Local ARM tools are not required. Native AOT and Store MSIX publishing are deferred to a later GitHub Actions phase.
+Development requires the .NET 10 SDK, Visual Studio WinUI tools and Windows SDK 26100. `global.json` excludes preview SDKs. Local ARM tools are not required. Native AOT remains out of scope.
+
+## Microsoft Store MSIX
+
+WinUI also supports an explicit single-project MSIX mode. GitHub Release continues to distribute only unpackaged ZIPs. Store packages embed .NET and declare Windows App SDK framework dependencies for Store deployment; they do not include WPF or CLI.
+
+```powershell
+# Explicit demo identity, NOT suitable for a real Store submission.
+.\publish-store.ps1 -PackageVersion 1.2.3.0 -RuntimeIdentifier win-x64 -Demo
+```
+
+The independent **Build Microsoft Store packages** workflow supports manual demo/production builds; `V1.2.3` tags automatically build production version `1.2.3.0`. Packages are uploaded only as Actions artifacts, never automatically submitted to the Store or attached to GitHub Release. Production builds fail explicitly until real product identity is configured; the separate ZIP release remains independent.
+
+See the [Microsoft Store setup and first-submission guide (Chinese)](docs/MICROSOFT-STORE.md) to continue from another computer: product creation, identity configuration, versions, signing/local testing, artifact downloads and manual Partner Center submission.
 
 ## Project structure
 
@@ -149,13 +162,16 @@ src/
   EpubMerge.Core.Pure/  EPUB validation and merge logic
   EpubMerge.Cli/        Standalone command-line application
   EpubMerge.Gui/        Original WPF GUI with independent ViewModels/resources
-  EpubMerge.Gui.WinUI/  Unpackaged WinUI 3 graphical interface
+  EpubMerge.Gui.WinUI/  WinUI 3, unpackaged by default with explicit Store MSIX mode
   EpubMerge.Presentation/ WinUI ViewModels, localization and storage
 tests/
   EpubMerge.Core.Tests/ Core logic tests
   EpubMerge.Cli.Tests/   CLI behavior and output tests
   EpubMerge.Gui.Tests/  Original WPF ViewModel tests
   EpubMerge.Presentation.Tests/ WinUI presentation tests without GUI framework loading
+  Packaging/           Store configuration failure-case tests
+packaging/             Store product identity configuration (initially blank)
+docs/                  Cross-computer setup and first-submission guide
 readmeRef/              README screenshots
 ```
 

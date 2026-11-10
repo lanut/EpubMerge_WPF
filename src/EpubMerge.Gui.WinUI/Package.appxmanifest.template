@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         IgnorableNamespaces="uap rescap">
+  <Identity Name="IDENTITY_REQUIRED" Publisher="CN=IDENTITY_REQUIRED" Version="1.0.0.0" />
+  <Properties>
+    <DisplayName>EPUB Merger</DisplayName>
+    <PublisherDisplayName>PUBLISHER_REQUIRED</PublisherDisplayName>
+    <Logo>Assets\Store\StoreLogo.png</Logo>
+    <Description>Merge EPUB books in your chosen order.</Description>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="zh-CN" />
+    <Resource Language="en-US" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
+      <uap:VisualElements DisplayName="EPUB Merger"
+                          Description="Merge EPUB books in your chosen order."
+                          BackgroundColor="transparent"
+                          Square150x150Logo="Assets\Store\Square150x150Logo.png"
+                          Square44x44Logo="Assets\Store\Square44x44Logo.png" />
+    </Application>
+  </Applications>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

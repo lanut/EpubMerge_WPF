@@ -6,6 +6,15 @@
 
 ## 当前更新
 
+### 商店 MSIX 与 GitHub ZIP 双通道
+
+- WinUI 新增显式单项目 MSIX 构建；默认仍为非打包应用，WPF/CLI 发布行为不变。
+- 商店包内置 .NET，通过框架依赖部署 Windows App SDK；包身份由独立配置生成，正式模式拒绝缺失/占位身份，演练模式须显式选择。
+- 新增手动及 V 标签触发的 x64/ARM64 MSIX Workflow，仅保存 Actions 工件，不自动提交商店，不向 GitHub Release 附加 MSIX。
+- GitHub Release 保持非打包 ZIP 双部署模式；商店 Workflow 失败不会阻塞 ZIP Release。
+- 新增 [跨电脑配置与人工首发指南](docs/MICROSOFT-STORE.md)，包含创建产品、填写身份、版本、签名测试和包上传步骤。
+- AOT 和自动商店提交仍未启用。
+
 ### WPF 与 WinUI 3 并存
 
 - 保留原版 WPF `EpubMerge.Gui`，新增独立非打包 WinUI 3 项目 `EpubMerge.Gui.WinUI`，基于 .NET 10 与 Windows App SDK 2.6.5。
@@ -13,7 +22,7 @@
 - WinUI 使用独立 Presentation 层及测试项目；WPF 保留原有 ViewModel、资源和测试，不引用 Presentation。
 - WinUI 历史与日志保留在 `%LOCALAPPDATA%\EpubMerge`，JSON 使用源生成；主题使用独立注册表键，不自动导入 WPF 历史。WPF 存储行为不变。
 - ZIP 中使用独立 `wpf`、`winui`、`cli` 子目录；WinUI 按完整目录发布，WPF 和 CLI 保留单文件托管程序集打包。
-- 自包含包同时携带 .NET 与 Windows App SDK 运行时；AOT 和商店 MSIX 留到后续阶段。
+- ZIP 自包含包同时携带 .NET 与 Windows App SDK 运行时；商店 MSIX 使用上节的独立依赖策略。
 
 ### 新增独立 CLI
 

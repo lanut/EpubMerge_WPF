@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup Condition="'$(MSBuildProjectName)' == 'EpubMerge.Gui.WinUI' and '$(StorePackage)' == 'true'">
+        <BaseIntermediateOutputPath>obj\Store\</BaseIntermediateOutputPath>
+        <BaseOutputPath>bin\Store\</BaseOutputPath>
+    </PropertyGroup>
+</Project>
