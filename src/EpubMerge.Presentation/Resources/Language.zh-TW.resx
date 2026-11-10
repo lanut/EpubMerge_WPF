@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="WindowTitle" xml:space="preserve"><value>EPUB 合併工具</value></data>
+  <data name="Theme" xml:space="preserve"><value>主題</value></data>
+  <data name="System" xml:space="preserve"><value>系統</value></data>
+  <data name="Light" xml:space="preserve"><value>淺色</value></data>
+  <data name="Dark" xml:space="preserve"><value>深色</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>語言</value></data>
+  <data name="Chinese" xml:space="preserve"><value>中文</value></data>
+  <data name="English" xml:space="preserve"><value>English</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>依清單順序合併；每本來源書籍會成為合併目錄的第一層項目。</value></data>
+  <data name="InputEpub" xml:space="preserve"><value>輸入 EPUB</value></data>
+  <data name="SetCoverFromBook" xml:space="preserve"><value>設為書籍封面</value></data>
+  <data name="ExportCover" xml:space="preserve"><value>匯出封面圖片</value></data>
+  <data name="LocateInExplorer" xml:space="preserve"><value>在檔案總管中顯示</value></data>
+  <data name="OpenWithDefault" xml:space="preserve"><value>使用預設應用程式開啟</value></data>
+  <data name="MoveTop" xml:space="preserve"><value>移至最上方</value></data>
+  <data name="MoveBottom" xml:space="preserve"><value>移至最下方</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>上移</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>下移</value></data>
+  <data name="RemoveSelected" xml:space="preserve"><value>移除選取項目</value></data>
+  <data name="FileName" xml:space="preserve"><value>檔案名稱</value></data>
+  <data name="FullPath" xml:space="preserve"><value>完整路徑</value></data>
+  <data name="DropEpub" xml:space="preserve"><value>將 EPUB 檔案拖放至此</value></data>
+  <data name="AddFilesHint" xml:space="preserve"><value>也可以使用下方按鈕新增檔案</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>新增檔案</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>新增資料夾</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="Clear" xml:space="preserve"><value>清空</value></data>
+  <data name="MergeSettings" xml:space="preserve"><value>合併設定</value></data>
+  <data name="OutputFile" xml:space="preserve"><value>輸出檔案</value></data>
+  <data name="ChooseLocation" xml:space="preserve"><value>選擇位置</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>合併書名</value></data>
+  <data name="CoverPreview" xml:space="preserve"><value>封面預覽</value></data>
+  <data name="DropImageHint" xml:space="preserve"><value>拖放圖片以預覽</value></data>
+  <data name="ExistingCoverHint" xml:space="preserve"><value>可以使用現有書籍的封面</value></data>
+  <data name="CoverPath" xml:space="preserve"><value>封面圖片路徑</value></data>
+  <data name="ChooseCover" xml:space="preserve"><value>選擇封面</value></data>
+  <data name="History" xml:space="preserve"><value>歷史工作</value></data>
+  <data name="StartMerge" xml:space="preserve"><value>開始合併</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="SupportedFormats" xml:space="preserve"><value>支援 EPUB 2 / EPUB 3，封面支援 JPG、PNG、GIF、WEBP、SVG。</value></data>
+  <data name="Author" xml:space="preserve"><value>作者：lanut | </value></data>
+  <data name="GithubHome" xml:space="preserve"><value> GitHub 專案首頁</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>沒有最近的工作</value></data>
+  <data name="SelectEpubFile" xml:space="preserve"><value>選取 EPUB 檔案</value></data>
+  <data name="SelectFilesToMerge" xml:space="preserve"><value>請選取要合併的 EPUB 檔案</value></data>
+  <data name="EpubFileFilter" xml:space="preserve"><value>EPUB 檔案|*.epub|所有檔案|*.*</value></data>
+  <data name="SelectEpubFolder" xml:space="preserve"><value>選取 EPUB 資料夾</value></data>
+  <data name="SaveMergedEpub" xml:space="preserve"><value>儲存合併的 EPUB</value></data>
+  <data name="SelectCoverImage" xml:space="preserve"><value>選取封面圖片</value></data>
+  <data name="ImageFileFilter" xml:space="preserve"><value>圖片檔案|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.svg|所有檔案|*.*</value></data>
+  <data name="ExportCoverImage" xml:space="preserve"><value>匯出封面圖片</value></data>
+  <data name="ImageFilter" xml:space="preserve"><value>圖片檔案|*{0}|所有檔案|*.*</value></data>
+  <data name="CoverMissing" xml:space="preserve"><value>「{0}」不含有效的封面圖片</value></data>
+  <data name="OpenEpubFailed" xml:space="preserve"><value>找不到可開啟 EPUB 的應用程式。請先安裝或關聯 EPUB 閱讀器。</value></data>
+  <data name="OpenFileFailed" xml:space="preserve"><value>無法開啟檔案</value></data>
+  <data name="NoCoverSelected" xml:space="preserve"><value>未選取封面圖片</value></data>
+  <data name="SelectImagePreview" xml:space="preserve"><value>可選取圖片進行預覽</value></data>
+  <data name="NoFiles" xml:space="preserve"><value>尚未新增檔案</value></data>
+  <data name="FileCount" xml:space="preserve"><value>{0} 本 EPUB</value></data>
+  <data name="RestoredTask" xml:space="preserve"><value>已還原歷史工作設定</value></data>
+  <data name="CoverExtracted" xml:space="preserve"><value>已從「{0}」擷取封面</value></data>
+  <data name="CoverReadFailed" xml:space="preserve"><value>無法讀取「{0}」的封面：{1}</value></data>
+  <data name="Cancelling" xml:space="preserve"><value>正在取消合併…</value></data>
+  <data name="MergeAlreadyRunning" xml:space="preserve"><value>已有合併工作正在執行</value></data>
+  <data name="Merging" xml:space="preserve"><value>正在合併，請稍候…</value></data>
+  <data name="ReadingBook" xml:space="preserve"><value>正在讀取第 {0} 本 EPUB…</value></data>
+  <data name="MergedBooks" xml:space="preserve"><value>已合併 {0}/{1} 本 EPUB</value></data>
+  <data name="MergeCompleted" xml:space="preserve"><value>合併完成：{0}</value></data>
+  <data name="MergeCompletedTitle" xml:space="preserve"><value>合併完成</value></data>
+  <data name="OpenOutputPrompt" xml:space="preserve"><value>開啟輸出檔案，或在檔案總管中顯示。</value></data>
+  <data name="MergeFailed" xml:space="preserve"><value>合併失敗</value></data>
+  <data name="MergeFailedRetry" xml:space="preserve"><value>合併失敗，請稍後再試。</value></data>
+  <data name="MergeCanceled" xml:space="preserve"><value>已取消合併</value></data>
+  <data name="ErrorLogSaved" xml:space="preserve"><value>詳細錯誤記錄已儲存至：{0}</value></data>
+  <data name="LoadedImage" xml:space="preserve"><value>已載入 {0} 圖片</value></data>
+  <data name="CoverFileMissing" xml:space="preserve"><value>封面檔案不存在
+請重新選取圖片</value></data>
+  <data name="CoverCannotDisplay" xml:space="preserve"><value>目前無法顯示此圖片
+仍可用作合併封面</value></data>
+  <data name="CannotReadCoverPath" xml:space="preserve"><value>無法讀取封面路徑</value></data>
+  <data name="UnsupportedPreviewFormat" xml:space="preserve"><value>系統解碼器無法預覽此格式</value></data>
+  <data name="MergeErrorInvalidArguments" xml:space="preserve"><value>合併參數無效。請檢查輸入檔案、輸出位置及書名。</value></data>
+  <data name="MergeErrorFileNotFound" xml:space="preserve"><value>找不到合併所需的檔案。請確認檔案仍存在且可存取。</value></data>
+  <data name="MergeErrorUnauthorized" xml:space="preserve"><value>沒有讀取輸入檔案或寫入輸出位置的權限。請選擇可存取的資料夾。</value></data>
+  <data name="MergeErrorIo" xml:space="preserve"><value>檔案讀寫失敗。請確認檔案未被其他應用程式佔用，並檢查可用磁碟空間。</value></data>
+  <data name="MergeErrorInvalidData" xml:space="preserve"><value>EPUB 結構無效或已損毀。請檢查輸入檔案後重試。</value></data>
+  <data name="MergeErrorXml" xml:space="preserve"><value>EPUB 內部目錄無效。請選擇其他檔案後重試。</value></data>
+  <data name="MergeErrorNotSupported" xml:space="preserve"><value>此 EPUB 含有不支援的內容。請選擇其他檔案後重試。</value></data>
+  <data name="MergeErrorUnknown" xml:space="preserve"><value>合併失敗，檔案可能已損毀或不受支援。請檢查輸入檔案後重試。</value></data>
+  <data name="CoverReadDetails" xml:space="preserve"><value>檔案可能無法存取，或封面格式不受支援。</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>操作失敗</value></data>
+  <data name="StorageFailed" xml:space="preserve"><value>無法讀取或儲存應用程式資料。請檢查資料夾權限及可用磁碟空間。已嘗試在本機應用程式資料目錄寫入診斷記錄。</value></data>
+  <data name="RecursivePrompt" xml:space="preserve"><value>也要匯入子資料夾中的 EPUB 檔案嗎？</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="Close" xml:space="preserve"><value>關閉</value></data>
+</root>

@@ -1,9 +1,6 @@
 name: Build Microsoft Store packages
 
 on:
-  push:
-    tags:
-      - 'V*'
   workflow_dispatch:
     inputs:
       package_version:
@@ -14,6 +11,11 @@ on:
         description: 'Use DEMO identity; never upload this package to Partner Center'
         type: boolean
         default: true
+      compilation_mode:
+        description: 'NativeAot is experimental until packaged runtime acceptance passes'
+        type: choice
+        options: [Managed, NativeAot]
+        default: Managed
 
 permissions:
   contents: read
@@ -49,29 +51,30 @@ jobs:
         runtime: [win-x64, win-arm64]
     env:
       REQUESTED_VERSION: ${{ inputs.package_version }}
-      DEMO_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.demo }}
+      DEMO_MODE: ${{ inputs.demo }}
+      COMPILATION_MODE: ${{ inputs.compilation_mode }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       - uses: microsoft/setup-msbuild@v2
+      - name: Configure native compiler
+        if: inputs.compilation_mode == 'NativeAot'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.runtime == 'win-arm64' && 'amd64_arm64' || 'amd64' }}
       - name: Build and validate unsigned MSIX
         shell: pwsh
         run: |
           $version = $env:REQUESTED_VERSION
-          if ($env:GITHUB_EVENT_NAME -eq 'push') {
-            if ($env:GITHUB_REF_NAME -notmatch '^V([1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') {
-              throw 'Store tags must be VMajor.Minor.Build (for example V1.2.3). ZIP publishing is independent.'
-            }
-            $version = "$($Matches[1]).$($Matches[2]).$($Matches[3]).0"
-          }
           $demo = $env:DEMO_MODE -eq 'true'
-          .\publish-store.ps1 -RuntimeIdentifier '${{ matrix.runtime }}' -PackageVersion $version -Demo:$demo
+          .\publish-store.ps1 -RuntimeIdentifier '${{ matrix.runtime }}' -PackageVersion $version -Demo:$demo -CompilationMode $env:COMPILATION_MODE
       - name: Upload Store submission artifacts (not a public Release)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: msix-${{ github.event_name == 'workflow_dispatch' && inputs.demo && 'DEMO-NOT-FOR-STORE' || 'STORE' }}-${{ matrix.runtime }}-${{ github.run_number }}
+          name: msix-${{ inputs.demo && 'DEMO-NOT-FOR-STORE' || 'STORE' }}-${{ inputs.compilation_mode }}-${{ matrix.runtime }}-${{ github.run_number }}
           path: publish\msix\**
           if-no-files-found: error
           retention-days: 14

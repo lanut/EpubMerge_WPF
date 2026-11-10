@@ -14,28 +14,29 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="140" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="{Binding [WindowTitle]}" Style="{ThemeResource TitleTextBlockStyle}" />
-                <TextBlock Text="{Binding [Subtitle]}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="{x:Bind Strings.Get('WindowTitle'), Mode=OneWay}" TextTrimming="CharacterEllipsis" Style="{ThemeResource TitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind Strings.Get('Subtitle'), Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="6">
-                <TextBlock Text="{Binding [Theme]}" />
+                <TextBlock Text="{x:Bind Strings.Get('Theme'), Mode=OneWay}" />
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Button Content="{Binding [System]}" Tag="System" Click="Theme_Click" />
-                    <Button Content="{Binding [Light]}" Tag="Light" Click="Theme_Click" />
-                    <Button Content="{Binding [Dark]}" Tag="Dark" Click="Theme_Click" />
+                    <Button Content="{x:Bind Strings.Get('System'), Mode=OneWay}" Tag="System" Click="Theme_Click" />
+                    <Button Content="{x:Bind Strings.Get('Light'), Mode=OneWay}" Tag="Light" Click="Theme_Click" />
+                    <Button Content="{x:Bind Strings.Get('Dark'), Mode=OneWay}" Tag="Dark" Click="Theme_Click" />
                 </StackPanel>
             </StackPanel>
-            <ComboBox x:Name="LanguagePicker" Grid.Column="2" Header="{Binding [LanguageLabel]}"
-                      ItemsSource="{x:Bind Languages}" SelectionChanged="Language_SelectionChanged" HorizontalAlignment="Stretch">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="models:LanguageOption">
-                        <TextBlock Text="{x:Bind DisplayName}" />
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+            <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Text="{x:Bind Strings.Get('LanguageLabel'), Mode=OneWay}" />
+                <DropDownButton x:Name="LanguagePicker" MinWidth="140"
+                                AutomationProperties.Name="{x:Bind Strings.Get('LanguageLabel'), Mode=OneWay}">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout x:Name="LanguageMenu" />
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+            </StackPanel>
         </Grid>
         <Grid x:Name="ContentGrid" Grid.Row="1" ColumnSpacing="8">
             <Grid.ColumnDefinitions>
@@ -52,7 +53,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid>
-                        <TextBlock Text="{Binding [InputEpub]}" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="{x:Bind Strings.Get('InputEpub'), Mode=OneWay}" Style="{ThemeResource SubtitleTextBlockStyle}" />
                         <TextBlock Text="{x:Bind ViewModel.FileCountText, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                     </Grid>
                     <Grid Grid.Row="1">
@@ -72,39 +73,59 @@
                             </ListView.ItemTemplate>
                             <ListView.ContextFlyout>
                                 <MenuFlyout Opening="FilesMenu_Opening">
-                                    <MenuFlyoutItem Text="{Binding [SetCoverFromBook]}" Tag="Cover" Click="ListAction_Click" />
-                                    <MenuFlyoutItem Text="{Binding [ExportCover]}" Tag="Export" Click="ListAction_Click" />
-                                    <MenuFlyoutItem Text="{Binding [LocateInExplorer]}" Tag="Locate" Click="ListAction_Click" />
-                                    <MenuFlyoutItem Text="{Binding [OpenWithDefault]}" Tag="Open" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('SetCoverFromBook'), Mode=OneWay}" Tag="Cover" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('ExportCover'), Mode=OneWay}" Tag="Export" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('LocateInExplorer'), Mode=OneWay}" Tag="Locate" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('OpenWithDefault'), Mode=OneWay}" Tag="Open" Click="ListAction_Click" />
                                     <MenuFlyoutSeparator />
-                                    <MenuFlyoutItem Text="{Binding [MoveTop]}" Tag="Top" Click="ListAction_Click" />
-                                    <MenuFlyoutItem Text="{Binding [MoveBottom]}" Tag="Bottom" Click="ListAction_Click" />
-                                    <MenuFlyoutItem Text="{Binding [MoveUp]}" Tag="Up" Click="ListAction_Click" />
-                                    <MenuFlyoutItem Text="{Binding [MoveDown]}" Tag="Down" Click="ListAction_Click" />
-                                    <MenuFlyoutItem Text="{Binding [RemoveSelected]}" Tag="Remove" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('MoveTop'), Mode=OneWay}" Tag="Top" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('MoveBottom'), Mode=OneWay}" Tag="Bottom" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('MoveUp'), Mode=OneWay}" Tag="Up" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('MoveDown'), Mode=OneWay}" Tag="Down" Click="ListAction_Click" />
+                                    <MenuFlyoutItem Text="{x:Bind Strings.Get('RemoveSelected'), Mode=OneWay}" Tag="Remove" Click="ListAction_Click" />
                                 </MenuFlyout>
                             </ListView.ContextFlyout>
                         </ListView>
                         <StackPanel x:Name="EmptyHint" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
-                            <TextBlock Text="{Binding [DropEpub]}" HorizontalAlignment="Center" />
-                            <TextBlock Text="{Binding [AddFilesHint]}" TextWrapping="Wrap" />
+                            <TextBlock Text="{x:Bind Strings.Get('DropEpub'), Mode=OneWay}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{x:Bind Strings.Get('AddFilesHint'), Mode=OneWay}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
                     <StackPanel Grid.Row="2" Spacing="8">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <Button Content="{Binding [AddFiles]}" Click="AddFiles_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" Style="{ThemeResource AccentButtonStyle}" />
-                            <Button Content="{Binding [AddFolder]}" Click="AddFolder_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
-                            <Button Content="{Binding [Remove]}" Tag="Remove" Click="ListAction_Click" IsEnabled="{x:Bind ViewModel.CanEditWithSelection, Mode=OneWay}" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <Button Content="{Binding [MoveUp]}" Tag="Up" Click="ListAction_Click" IsEnabled="{x:Bind ViewModel.CanEditWithSelection, Mode=OneWay}" />
-                            <Button Content="{Binding [MoveDown]}" Tag="Down" Click="ListAction_Click" IsEnabled="{x:Bind ViewModel.CanEditWithSelection, Mode=OneWay}" />
-                            <Button Content="{Binding [Clear]}" Command="{x:Bind ViewModel.ClearFilesCommand}" />
-                        </StackPanel>
+                        <Grid ColumnSpacing="6">
+                            <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
+                            <Button Click="AddFiles_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" Style="{ThemeResource AccentButtonStyle}" HorizontalAlignment="Stretch"
+                                    AutomationProperties.Name="{x:Bind Strings.Get('AddFiles'), Mode=OneWay}">
+                                <TextBlock Text="{x:Bind Strings.Get('AddFiles'), Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
+                            </Button>
+                            <Button Grid.Column="1" Click="AddFolder_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" HorizontalAlignment="Stretch"
+                                    AutomationProperties.Name="{x:Bind Strings.Get('AddFolder'), Mode=OneWay}">
+                                <TextBlock Text="{x:Bind Strings.Get('AddFolder'), Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
+                            </Button>
+                            <Button Grid.Column="2" Tag="Remove" Click="ListAction_Click" IsEnabled="{x:Bind ViewModel.CanEditWithSelection, Mode=OneWay}" HorizontalAlignment="Stretch"
+                                    AutomationProperties.Name="{x:Bind Strings.Get('Remove'), Mode=OneWay}">
+                                <TextBlock Text="{x:Bind Strings.Get('Remove'), Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
+                            </Button>
+                        </Grid>
+                        <Grid ColumnSpacing="6">
+                            <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
+                            <Button Tag="Up" Click="ListAction_Click" IsEnabled="{x:Bind ViewModel.CanEditWithSelection, Mode=OneWay}" HorizontalAlignment="Stretch"
+                                    AutomationProperties.Name="{x:Bind Strings.Get('MoveUp'), Mode=OneWay}">
+                                <TextBlock Text="{x:Bind Strings.Get('MoveUp'), Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
+                            </Button>
+                            <Button Grid.Column="1" Tag="Down" Click="ListAction_Click" IsEnabled="{x:Bind ViewModel.CanEditWithSelection, Mode=OneWay}" HorizontalAlignment="Stretch"
+                                    AutomationProperties.Name="{x:Bind Strings.Get('MoveDown'), Mode=OneWay}">
+                                <TextBlock Text="{x:Bind Strings.Get('MoveDown'), Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
+                            </Button>
+                            <Button Grid.Column="2" Command="{x:Bind ViewModel.ClearFilesCommand}" HorizontalAlignment="Stretch"
+                                    AutomationProperties.Name="{x:Bind Strings.Get('Clear'), Mode=OneWay}">
+                                <TextBlock Text="{x:Bind Strings.Get('Clear'), Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
+                            </Button>
+                        </Grid>
                     </StackPanel>
                 </Grid>
             </Border>
-            <primitives:Thumb Grid.Column="1" DragDelta="Splitter_DragDelta" AutomationProperties.Name="{Binding [MergeSettings]}">
+            <primitives:Thumb Grid.Column="1" DragDelta="Splitter_DragDelta" AutomationProperties.Name="{x:Bind Strings.Get('MergeSettings'), Mode=OneWay}">
                 <primitives:Thumb.Template>
                     <ControlTemplate TargetType="primitives:Thumb">
                         <Grid Background="Transparent">
@@ -117,48 +138,65 @@
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="{Binding [MergeSettings]}" Style="{ThemeResource SubtitleTextBlockStyle}" />
-                        <TextBox Header="{Binding [OutputFile]}" Text="{x:Bind ViewModel.OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
-                        <Button Content="{Binding [ChooseLocation]}" Click="PickOutput_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
-                        <TextBox Header="{Binding [MergeTitle]}" Text="{x:Bind ViewModel.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
-                        <TextBlock Text="{Binding [CoverPreview]}" />
+                        <TextBlock Text="{x:Bind Strings.Get('MergeSettings'), Mode=OneWay}" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                        <TextBox Header="{x:Bind Strings.Get('OutputFile'), Mode=OneWay}" Text="{x:Bind ViewModel.OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+                        <Button Content="{x:Bind Strings.Get('ChooseLocation'), Mode=OneWay}" Click="PickOutput_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+                        <TextBox Header="{x:Bind Strings.Get('MergeTitle'), Mode=OneWay}" Text="{x:Bind ViewModel.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind Strings.Get('CoverPreview'), Mode=OneWay}" />
                         <Border Height="200" BorderThickness="1" CornerRadius="6"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 AllowDrop="True" DragOver="Cover_DragOver" Drop="Cover_Drop">
                             <Grid>
                                 <Image x:Name="CoverImage" Stretch="Uniform" Margin="8" />
                                 <StackPanel x:Name="CoverHint" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="▧" FontSize="34" HorizontalAlignment="Center" Margin="0,0,0,6"
+                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                     <TextBlock Text="{x:Bind ViewModel.CoverPreviewMessage, Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
-                                    <TextBlock Text="{Binding [DropImageHint]}" TextWrapping="Wrap" TextAlignment="Center" />
-                                    <TextBlock Text="{Binding [ExistingCoverHint]}" TextWrapping="Wrap" TextAlignment="Center" />
+                                    <TextBlock Text="{x:Bind Strings.Get('DropImageHint'), Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
+                                    <TextBlock Text="{x:Bind Strings.Get('ExistingCoverHint'), Mode=OneWay}" TextWrapping="Wrap" TextAlignment="Center" />
                                 </StackPanel>
                             </Grid>
                         </Border>
                         <TextBlock x:Name="PreviewStatus" TextWrapping="Wrap" FontSize="12" />
-                        <TextBox Header="{Binding [CoverPath]}" Text="{x:Bind ViewModel.CoverPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+                        <TextBox Header="{x:Bind Strings.Get('CoverPath'), Mode=OneWay}" Text="{x:Bind ViewModel.CoverPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <Button Content="{Binding [ChooseCover]}" Click="PickCover_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
-                            <Button Content="{Binding [Clear]}" Command="{x:Bind ViewModel.ClearCoverCommand}" />
+                            <Button Content="{x:Bind Strings.Get('ChooseCover'), Mode=OneWay}" Click="PickCover_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+                            <Button Content="{x:Bind Strings.Get('Clear'), Mode=OneWay}" Command="{x:Bind ViewModel.ClearCoverCommand}" />
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
         </Grid>
         <Grid Grid.Row="2" RowSpacing="8">
-            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
             <ProgressBar x:Name="MergeProgress" Minimum="0" Maximum="1" Value="{x:Bind ViewModel.ProgressValue, Mode=OneWay}" />
             <Grid Grid.Row="1" ColumnSpacing="12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextWrapping="Wrap" />
                     <TextBlock Text="{x:Bind ViewModel.ProgressCountText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding [SupportedFormats]}" FontSize="11" TextWrapping="Wrap" />
-                    <HyperlinkButton Content="{Binding [GithubHome]}" NavigateUri="https://github.com/lanut/EpubMerge_WPF" Padding="0" />
+                    <TextBlock Text="{x:Bind Strings.Get('SupportedFormats'), Mode=OneWay}" FontSize="11" TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Button Content="{Binding [History]}" Click="History_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+                    <Button Content="{x:Bind Strings.Get('History'), Mode=OneWay}" Click="History_Click" IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
                     <Button Content="{x:Bind ViewModel.MergeButtonText, Mode=OneWay}" Click="Merge_Click" Style="{ThemeResource AccentButtonStyle}" />
                 </StackPanel>
+            </Grid>
+            <Grid Grid.Row="2" ColumnSpacing="8">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Strings.Get('Author'), Mode=OneWay}" VerticalAlignment="Center"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <HyperlinkButton x:Name="GithubLink" Grid.Column="1" NavigateUri="https://github.com/lanut/EpubMerge_WPF"
+                                 HorizontalAlignment="Left" Padding="0"
+                                 AutomationProperties.Name="{x:Bind Strings.Get('GithubHome'), Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Path x:Name="GithubIcon" Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center"
+                              Fill="{ThemeResource TextFillColorSecondaryBrush}"
+                              Data="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.084-.729.084-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.776.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.292-1.552 3.297-1.23 3.297-1.23.647 1.653.24 2.873.118 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.575C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                        <TextBlock Text="{x:Bind Strings.Get('GithubHome'), Mode=OneWay}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </HyperlinkButton>
+                <HyperlinkButton x:Name="DisclaimerLink" Grid.Column="2" Content="Disclaimer" Click="Disclaimer_Click" Padding="0" />
             </Grid>
         </Grid>
     </Grid>

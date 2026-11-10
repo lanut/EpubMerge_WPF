@@ -24,6 +24,8 @@ function Assert-Fails {
 
 try {
     Assert-Fails @{ PackageVersion = '1.2.3.0'; SettingsPath = $settingsPath } 'Set IdentityName'
+    Assert-Fails @{ PackageVersion = '1.2.3.0'; SettingsPath = $settingsPath; CompilationMode = 'NativeAot' } 'Set IdentityName'
+    Assert-Fails @{ PackageVersion = '1.2.3.0'; CompilationMode = 'Invalid' } 'NativeAot'
     foreach ($version in @('1.2.3', '1.2.3.1', '01.2.3.0', '1.2.3.0\escape', 'V1.2.3')) {
         Assert-Fails @{ PackageVersion = $version; Demo = $true } 'PackageVersion must be'
     }

@@ -4,17 +4,30 @@
 
 | 渠道 | 内容 | 入口 |
 |---|---|---|
-| GitHub Release | 非打包 ZIP，包含 WPF、WinUI、CLI；各有独立目录 | [build-release.yml](../.github/workflows/build-release.yml)、[publish.ps1](../publish.ps1) |
+| GitHub Release | 非打包 ZIP，只包含 WPF、CLI；各有独立目录，保留 V 标签触发 | [build-release.yml](../.github/workflows/build-release.yml)、[publish.ps1](../publish.ps1) |
 | Microsoft Store | 只有 WinUI 的 MSIX；本阶段构建并保存 Actions 工件，人工上传 Partner Center | [build-store.yml](../.github/workflows/build-store.yml)、[publish-store.ps1](../publish-store.ps1) |
 
-不把未签名 MSIX 加到公开 GitHub Release，不从商店导出包作为 GitHub 安装包。本阶段不接自动提交商店，不需要 Entra Client Secret、Seller ID 或签名证书 Secrets，也不启用 AOT/裁剪。
+不把未签名 MSIX 加到公开 GitHub Release，不从商店导出包作为 GitHub 安装包。商店 Workflow 仅手动构建，人工上传；不需要 Entra Client Secret、Seller ID 或签名证书 Secrets。WinUI 提供显式 AOT 试验入口，安装验收前仍默认 Managed，不静默回退。
 
 商店模式使用 **.NET 自包含 + Windows App SDK 框架依赖**：
 
-- MSIX 内有 .NET 10 CoreCLR，用户不需另外安装 .NET。
+- 默认 Managed MSIX 内有 .NET 10 CoreCLR；NativeAot 将所需 .NET 支持编入原生 EXE，不包含 CoreCLR。两者均不需用户另外安装 .NET。
 - Windows App SDK 框架依赖由官方构建目标生成；商店负责依赖部署。不能把普通 .NET 10 Runtime 当作 UWP .NET Native 框架包。
 - 本地侧载不等于商店安装；测试时还要部署对应框架依赖。
 - 原 GitHub ZIP 的自包含/依赖框架选择不受影响。
+- WinUI 只维护 Windows App SDK 框架依赖这一种部署策略；Managed/NativeAot 是编译方式，不是 SDK 部署两档。
+
+### 界面语言与商店资源
+
+WinUI 页脚包含本地化作者信息、GitHub 矢量图标链接及英文 **Disclaimer** 弹窗入口。图标直接使用 `Microsoft.UI.Xaml.Shapes.Path`，不引入图片或反射依赖。免责正文固定英文，关闭按钮随界面语言；它不替代 MIT 许可证、Partner Center 所需说明或适用法律。英文内容见 [README.en.md](../README.en.md#disclaimer)。
+
+WinUI 支持简中 `zh-CN`、英语 `en-US`、繁中 `zh-TW`、日语 `ja-JP`、韩语 `ko-KR`、法语 `fr-FR`、德语 `de-DE`、西语 `es-ES`、巴西葡语 `pt-BR`、俄语 `ru-RU`。清单声明与语言目录一致，Managed 包包含对应卫星资源（简中为中性内嵌资源）；AOT 将资源编入原生 EXE，不要求卫星 DLL。
+
+首次启动匹配系统 UI 语言，不支持则英语；下拉按钮可即时切换，并将主动选择保存在 WinUI 独立注册表键的 `LanguagePreference`。有包身份后注册表可能重定向，需在隔离环境验证重启记忆。应用语言不翻译 EPUB 内容或替代系统文件选择器的语言设置。新增翻译仍需母语审校；商店页面的语言和文案需另在 Partner Center 配置。
+
+打包校验核对实际提交包的十种语言及资源。构建脚本使用 Rebuild，防止连续构建不同版本时 SDK 增量缓存复用旧清单；身份/版本不匹配仍明确失败。
+
+本轮多语言验证已通过：Release 构建零警告/错误、90 项 .NET 测试、11 项打包输入负例；x64 Native AOT 实际运行切换十种语言、重启记忆、菜单键盘操作及法/德/俄语最小窗口按钮边界检查。法语下真实 EPUB 合并、三个完成按钮和仅关闭弹窗行为也通过，用户另已手动确认 i18n 可用。`1.1.5.0` 的 x64 Managed/NativeAot 演练提交包均通过十语言清单及各自载荷检查；这不替代签名安装、ARM64 设备验收或翻译母语审校。
 
 ## 1. 在另一台电脑继续工作
 
@@ -26,6 +39,7 @@
 2. Visual Studio 的 WinUI 应用开发工具和 MSBuild。
 3. Windows SDK 26100（当前项目 BuildTools 版本为 `10.0.26100.9457`），包含 MakeAppx 和 SignTool。
 4. 使用 PowerShell 7，仓库根目录为当前目录。x64 本地验证足够，ARM64 交给 GitHub Actions。
+5. 如需 NativeAot，另装“使用 C++ 的桌面开发”、MSVC x64/x86 工具及 SDK UCRT/UM 库。ARM64 AOT 需要相应的 C++ ARM64 工具，Workflow 为其配置交叉编译环境；不要求本地安装 ARM 工具。
 
 ## 2. 尚未创建产品：先做演练
 
@@ -34,7 +48,7 @@
 .\publish-store.ps1 -PackageVersion 1.2.3.0 -RuntimeIdentifier win-x64 -Demo
 ```
 
-输出：`publish\msix\demo\1.2.3.0\win-x64\`。包括 `.msixupload`、测试 MSIX/依赖目录和 `package-validation.json`。
+输出：`publish\msix\demo\1.2.3.0\Managed\win-x64\`。包括 `.msixupload`、测试 MSIX/依赖目录、构建诊断 `build.binlog` 和 `package-validation.json`。
 
 演练身份为 `EpubMerge.WinUI.Demo`，显示名称包含 DEMO。**它不是正式商店包，不要提交 Partner Center。** 演练开关必须显式提供；缺少真实身份时不会自动切到演练。
 
@@ -43,6 +57,7 @@
 - 选择包含这些文件的分支。
 - `package_version` 填 `1.2.3.0`。
 - 保持 `demo=true`。
+- `compilation_mode` 默认 `Managed`；进行 AOT 试验时显式选 `NativeAot`。
 - 下载两个架构的 `msix-DEMO-NOT-FOR-STORE-...` 工件。Actions 外层下载 ZIP 只是工件传输容器。
 
 ## 3. 创建正式 Store 产品并填写身份
@@ -80,23 +95,29 @@ GitHub 手动构建：
 
 1. Run workflow，填写版本。
 2. **取消 demo**。
-3. 两个架构任务完成后下载 `msix-STORE-win-x64-...`、`msix-STORE-win-arm64-...`。
+3. 保留 `compilation_mode=Managed`，两个架构任务完成后下载 `msix-STORE-Managed-win-x64-...`、`msix-STORE-Managed-win-arm64-...`。
 
-标签自动构建：
-
-```powershell
-git tag V1.2.3
-git push origin V1.2.3
-```
-
-- Store workflow 将 `V1.2.3` 转成 `1.2.3.0`，始终正式模式。
-- Store 标签只接受 `VMajor.Minor.Build`，预发布标签/四段标签需使用手动触发并提供合法包版本。
-- **尚未配置身份时，V 标签的 Store workflow 失败是预期行为；独立 ZIP Release workflow 不依赖它，仍可正常发布。**
+- **Store 不监听 V 标签，不从标签推导版本。** V 标签只发布 WPF/CLI ZIP。
 - 构建不会自动上传 Partner Center。Actions 工件保存 14 天，及时下载归档。
 
-正式输出：`publish\msix\store\<版本>\<架构>\`。优先上传两个架构各自的 `.msixupload`，在 Partner Center 同一个版本提交中同时添加，不需要为每个架构创建一个商店产品。
+正式输出：`publish\msix\store\<版本>\<Managed|NativeAot>\<架构>\`。优先上传两个架构各自的 `.msixupload`，在 Partner Center 同一个版本提交中同时添加，不需要为每个架构创建一个商店产品。
 
-`package-validation.json` 记录已核对的身份、版本、架构、签名状态和 Windows App SDK 框架依赖。不要把演练与正式版本混用。
+`package-validation.json` 记录已核对的身份、版本、编译模式、架构、签名状态和 Windows App SDK 框架依赖。不要把演练与正式版本混用。
+
+### Native AOT 试验与回退
+
+```powershell
+# 仅本地诊断，不加入公开 ZIP；使用已安装的 Windows App Runtime
+dotnet publish src\EpubMerge.Gui.WinUI\EpubMerge.Gui.WinUI.csproj -c Release -r win-x64 -p:Platform=x64 -p:PublishAot=true -o publish\aot-diagnostics\win-x64
+# 生成真正包含原生 EXE 的 StoreUpload
+.\publish-store.ps1 -PackageVersion 1.2.3.0 -RuntimeIdentifier win-x64 -Demo -CompilationMode NativeAot
+# 普通 .NET 回退（不会自动从 AOT 回退）
+.\publish-store.ps1 -PackageVersion 1.2.3.0 -RuntimeIdentifier win-x64 -Demo -CompilationMode Managed
+```
+
+脚本检查实际 `.msixupload` 内的 MSIX。AOT 分支检查原生运行时导出 `DotNetRuntimeDebugHeader`、PE 架构、无 CoreCLR/托管宿主及资源；RESX 语言资源编入原生 EXE，不再要求卫星 DLL。Managed 分支保留 CoreCLR、runtimeconfig 及卫星 DLL 校验。两者的清单均需声明 Windows App SDK 框架依赖。AOT 的无用 deps/runtimeconfig 元数据从包体排除，不保留整个托管程序集来绕过裁剪。
+
+用户选择自行在隔离环境做有包身份的验收：按下节签名安装步骤对 **NativeAot** 输出操作，检查启动、中英文实时切换、主题、菜单、文件/目录选择器、拖放排序、封面、历史、日志、真实 EPUB 合并输出、错误提示、进度及取消。与 Managed 使用相同夹具对照。ARM64 需手动触发构建并在相应设备验收；本地 x64 成功不代表 ARM64 已通过。未完成这些验收前，保持脚本和 Workflow 的 Managed 默认。
 
 ## 5. 人工首发清单
 
@@ -115,9 +136,12 @@ git push origin V1.2.3
 
 - x64 DEMO `1.1.3.0` 成功生成 `.msixupload`，解开其中实际提交的 MSIX，校验身份、版本、PE 架构、PRI、语言/图标资源、内置 CoreCLR 和自包含 runtimeconfig。
 - 清单生成的框架依赖为 `Microsoft.WindowsAppRuntime.2 >= 2.6.5.0`，不是手工猜测的 .NET 依赖。
-- 9 个配置/版本失败场景通过；默认 solution 的 Debug/Release 构建零警告、零错误，68 项 .NET 测试通过。首次全套测试遇到一次既有历史文件锁异常，针对性及全套重跑通过，未改动历史存储逻辑。
-- 原 x64 两种 ZIP 部署目录均重新发布，四个 GUI 入口启动响应，CLI 帮助正常；原 ZIP workflow 和脚本未改动。
-- 用户选择不进行签名安装验证，因此没有创建证书、改动信任存储或安装演练包。**有包身份后的实际启动、文件选择器、历史/主题、合并行为尚需在测试环境验证。**
+- 当前 Release solution 构建零警告、零错误，69 项 .NET 测试及 11 个打包输入失败场景通过；新增本地化编译绑定刷新/解除订阅测试，未改动历史存储逻辑。
+- 本次新增 x64 NativeAot 诊断发布及 DEMO `1.1.4.0` StoreUpload 原生包体检查，Managed 同版本回退包也通过检查。公开 ZIP 已收窄为 WPF/CLI，商店 Workflow 已改为仅手动。
+- 修复 AOT 启动时 ItemsSource 的 WinRT 参数异常：在 WinUI 宿主显式源生成 BookFile 集合/模型适配器，Presentation 不引入 Windows 依赖；语言选择现为直接生成的菜单，不再通过 ItemsSource 暴露语言列表。
+- x64 非打包 AOT 和 Managed 均通过启动、实时中英文、深浅主题、历史恢复、文件列表及带封面真实合并检查；两者输出 EPUB 的全部条目内容一致，仅规范化每次生成的 UUID 和修改时间。AOT 进程未加载 CoreCLR。文件选择器、拖放排序、错误/取消及任务栏视觉效果仍需人工交互验收。
+- WPF/CLI 四种架构/部署输出及实际 ZIP 已检查，根目录精确为 `wpf`、`cli`，EXE 架构匹配；x64 两种 CLI 帮助正常，旧 `winui` 目录拒绝保护通过。
+- 用户选择自行在隔离环境进行签名安装验收；本机没有创建证书、改动信任存储或安装演练包。**有包身份后的实际启动、文件选择器、历史/主题、合并行为尚需在测试环境验证。**
 - 真实身份验证、远端 workflow、ARM64 原生运行、干净系统依赖部署和商店认证仍需要实际执行。
 
 ## 6. 本地安装测试：需要测试签名
@@ -130,7 +154,8 @@ git push origin V1.2.3
 
 ```powershell
 # 在仓库根目录运行；请先定位本次生成的主 MSIX。
-$package = Get-ChildItem 'publish\msix\demo\1.2.3.0\win-x64' -Recurse -Filter '*.msix' |
+$compilation = 'NativeAot' # 如验收普通 .NET 回退则改为 Managed
+$package = Get-ChildItem "publish\msix\demo\1.2.3.0\$compilation\win-x64" -Recurse -Filter '*.msix' |
     Where-Object { $_.Name -notlike 'Microsoft.*' } |
     Select-Object -First 1
 $signedCopy = Join-Path $env:TEMP 'EpubMerge-Demo-Signed.msix'
@@ -156,7 +181,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Test signature verification failed.' }
 Add-AppxPackage -Path $signedCopy
 ```
 
-仅针对自己生成的演练包，测试启动、中英文、主题、选择/取消、导入、合并、历史恢复、输出路径以及日志。MSIX 安装目录只读，不应写入；包身份可能引起文件系统/注册表重定向，不保证与 ZIP 共享历史或主题。当前代码不强制搬迁已有用户数据。
+仅针对自己生成的演练包，测试启动、十种语言切换和重启记忆、主题、选择/取消、导入、合并、历史恢复、输出路径以及日志。MSIX 安装目录只读，不应写入；包身份可能引起文件系统/注册表重定向，不保证与 ZIP 共享历史或主题。当前代码不强制搬迁已有用户数据。
 
 结束后关闭测试应用，按本次记录的确切包名及证书指纹清理：
 

@@ -32,7 +32,7 @@
 - 支持文件夹批量导入、自然排序和最近任务恢复
 - 合并过程中可取消任务，完成后可直接打开文件或所在文件夹
 - 支持命令行模式，可进行批量合并和自动化处理
-- 支持中英文界面运行时切换
+- WinUI 支持 10 种语言即时切换；WPF 保持中英文
 - 合并失败和封面读取错误提供本地化提示，并记录详细日志便于排查
 - 支持 JPG、JPEG、PNG、GIF、WEBP、SVG 封面
 - 支持系统、浅色和深色主题
@@ -53,7 +53,7 @@
 
 ## CLI 命令行模式
 
-发布包包含不会弹出窗口的独立 CLI。WPF、WinUI 和 CLI 分别位于 `wpf`、`winui` 和 `cli` 子目录，以下命令在 `cli` 目录执行：
+GitHub 发布包包含 WPF 和不会弹出窗口的独立 CLI，分别位于 `wpf` 和 `cli` 子目录；WinUI 仅通过商店 MSIX 分发。以下命令在 `cli` 目录执行：
 
 ```powershell
 EpubMerge.Cli.exe -i .\vol*.epub -o .\merged.epub --title "合辑"
@@ -79,15 +79,23 @@ CLI 退出码为 `0`（成功）、`1`（参数或输入校验失败）和 `2`�
 ## 运行环境
 
 - Windows 11，x64 或 ARM64（本地验证 x64；其他系统须满足 .NET 10 和 Windows App SDK 的支持要求）
-- 自包含发布包携带各宿主所需的 .NET / Windows Desktop / Windows App SDK 运行时
+- GitHub 自包含发布包携带 WPF/CLI 所需的 .NET / Windows Desktop 运行时
 - 依赖框架 WPF：对应架构的 .NET 10 Desktop Runtime
-- 依赖框架 WinUI：对应架构的 .NET 10 Runtime 及 Windows App Runtime 2.6.5
+- WinUI 商店包内置所需 .NET 支持，Windows App Runtime 2.6.5 由商店作为框架依赖部署；本地非打包开发需已安装该运行时
 - 依赖框架 CLI：对应架构的 .NET 10 Runtime
 - WinUI 封面预览依赖系统图像解码器；无法解码的图像会显示错误，不影响原始文件
 
 两个 GUI 的数据互不导入或同步。WPF 保持原行为：历史位于程序目录下的 `EpubMerge.Gui\history.json`，日志位于程序目录，主题位于 `HKCU\Software\EpubMerge.Gui`。WinUI 历史、日志及缓存保留在 `%LOCALAPPDATA%\EpubMerge`，主题使用独立的 `HKCU\Software\EpubMerge.Gui.WinUI`；不会自动导入 WPF 历史。
 
 ## 构建项目
+
+### WinUI 界面语言
+
+语言下拉按钮显示当前语言，并在菜单中标记选中项。支持简体中文、繁體中文、English、日本語、한국어、Français、Deutsch、Español、Português (Brasil)、Русский。
+
+首次启动匹配系统 UI 语言，不支持则使用英语；用户选择保存在 `HKCU\Software\EpubMerge.Gui.WinUI` 的 `LanguagePreference`，后续启动优先使用。未主动选择时不会固定系统语言。需要重新跟随系统时，可在关闭 WinUI 后删除该注册表值，保留其他设置。
+
+切换只影响应用界面，不翻译书名、文件名、EPUB 内容及第三方异常原文；系统选择器可能使用系统自身语言。新翻译仍欢迎母语用户审校。WPF/CLI 语言行为不变。
 
 在仓库根目录执行：
 
@@ -132,13 +140,12 @@ git push origin V1.0.0
 
 ```text
 wpf\EpubMerge.Gui.exe
-winui\EpubMerge.Gui.WinUI.exe
 cli\EpubMerge.Cli.exe
 ```
 
-三个目录隔离依赖。WinUI 必须连同整个 `winui` 目录分发，不是单文件程序；WPF 和 CLI 保留单文件托管程序集打包策略，仍需保留同目录附带的原生依赖。自包含模式携带各宿主所需的运行时。
+两个目录隔离依赖。WPF 和 CLI 保留单文件托管程序集打包策略，仍需保留同目录附带的原生依赖。自包含模式携带所需的运行时。复用旧发布目录时，若残留 `winui`，脚本会要求移走旧目录或显式使用 `-Clean`。
 
-开发机需 .NET 10 SDK、VS WinUI 开发工具及 Windows SDK 26100；`global.json` 排除预览 SDK。本地无需 ARM 工具。本阶段不启用 AOT。
+开发机需 .NET 10 SDK、VS WinUI 开发工具及 Windows SDK 26100；`global.json` 排除预览 SDK。本地无需 ARM 工具。WinUI AOT 试验另需“使用 C++ 的桌面开发”及 MSVC x64/x86 工具；WPF/CLI 不启用 AOT。
 
 ## Microsoft Store MSIX
 
@@ -149,7 +156,9 @@ WinUI 支持独立的单项目 MSIX 模式；GitHub Release 仍只发布上述�
 .\publish-store.ps1 -PackageVersion 1.2.3.0 -RuntimeIdentifier win-x64 -Demo
 ```
 
-独立的 **Build Microsoft Store packages** Workflow 可手动构建演练/正式包，`V1.2.3` 标签自动构建 `1.2.3.0` 正式包。产物仅保存在 Actions artifacts，不自动提交商店，也不附加到 GitHub Release。未填写真实身份时正式包构建会明确失败，不影响独立 ZIP 发布。
+独立的 **Build Microsoft Store packages** Workflow **仅手动触发**，显式填写版本及演练/正式模式。`compilation_mode` 默认 `Managed`，可选试验性的 `NativeAot`；两种编译方式都只使用 Windows App SDK 框架依赖，不提供 SDK 自包含第二档。产物仅保存在 Actions artifacts，人工上传商店，不附加到 GitHub Release；V 标签仅发布 WPF/CLI ZIP。未填写真实身份时正式包构建会明确失败。
+
+x64 AOT 已通过原生编译、实际 MSIX 包体检查，以及非打包模式下语言/主题/历史/真实合并的 Managed 对照检查；有包身份的安装运行和 ARM64 验收尚未完成，因此不切换商店默认。试验命令与隔离环境验收步骤见下方商店指南。
 
 **在其他电脑继续配置及人工首发，请按 [Microsoft Store 指南](docs/MICROSOFT-STORE.md) 操作。** 包括产品创建、身份配置、版本、签名/本地测试、工件下载及 Partner Center 首次提交。
 
@@ -180,5 +189,7 @@ readmeRef/              README 截图
 - 源文件会被读取，应用不会修改原始 EPUB 文件。
 
 ## 许可证
+
+WinUI 页脚显示作者及 GitHub 矢量图标，并提供 **Disclaimer** 入口：点击显示英文免责条款，关闭按钮跟随当前界面语言。内容涵盖无担保、备份与输出检查、版权和授权责任，详见[英文免责说明](README.en.md#disclaimer)。WPF 保持不变。
 
 本项目使用 [LICENSE](LICENSE) 中的许可证。

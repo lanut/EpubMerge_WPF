@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="WindowTitle" xml:space="preserve"><value>EPUB 結合ツール</value></data>
+  <data name="Theme" xml:space="preserve"><value>テーマ</value></data>
+  <data name="System" xml:space="preserve"><value>システム</value></data>
+  <data name="Light" xml:space="preserve"><value>ライト</value></data>
+  <data name="Dark" xml:space="preserve"><value>ダーク</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>言語</value></data>
+  <data name="Chinese" xml:space="preserve"><value>中国語</value></data>
+  <data name="English" xml:space="preserve"><value>英語</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>リストの順に結合します。各書籍は結合後の目次の最上位項目になります。</value></data>
+  <data name="InputEpub" xml:space="preserve"><value>入力 EPUB</value></data>
+  <data name="SetCoverFromBook" xml:space="preserve"><value>書籍の表紙を使用</value></data>
+  <data name="ExportCover" xml:space="preserve"><value>表紙画像を書き出す</value></data>
+  <data name="LocateInExplorer" xml:space="preserve"><value>エクスプローラーで表示</value></data>
+  <data name="OpenWithDefault" xml:space="preserve"><value>既定のアプリで開く</value></data>
+  <data name="MoveTop" xml:space="preserve"><value>先頭へ移動</value></data>
+  <data name="MoveBottom" xml:space="preserve"><value>末尾へ移動</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>上へ</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>下へ</value></data>
+  <data name="RemoveSelected" xml:space="preserve"><value>選択項目を削除</value></data>
+  <data name="FileName" xml:space="preserve"><value>ファイル名</value></data>
+  <data name="FullPath" xml:space="preserve"><value>フルパス</value></data>
+  <data name="DropEpub" xml:space="preserve"><value>EPUB ファイルをここにドロップ</value></data>
+  <data name="AddFilesHint" xml:space="preserve"><value>下のボタンからもファイルを追加できます</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>ファイルを追加</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>フォルダーを追加</value></data>
+  <data name="Remove" xml:space="preserve"><value>削除</value></data>
+  <data name="Clear" xml:space="preserve"><value>クリア</value></data>
+  <data name="MergeSettings" xml:space="preserve"><value>結合設定</value></data>
+  <data name="OutputFile" xml:space="preserve"><value>出力ファイル</value></data>
+  <data name="ChooseLocation" xml:space="preserve"><value>保存先を選択</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>結合後の書名</value></data>
+  <data name="CoverPreview" xml:space="preserve"><value>表紙プレビュー</value></data>
+  <data name="DropImageHint" xml:space="preserve"><value>画像をドロップしてプレビュー</value></data>
+  <data name="ExistingCoverHint" xml:space="preserve"><value>既存の書籍の表紙も使用できます</value></data>
+  <data name="CoverPath" xml:space="preserve"><value>表紙画像のパス</value></data>
+  <data name="ChooseCover" xml:space="preserve"><value>表紙を選択</value></data>
+  <data name="History" xml:space="preserve"><value>履歴</value></data>
+  <data name="StartMerge" xml:space="preserve"><value>結合開始</value></data>
+  <data name="Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="SupportedFormats" xml:space="preserve"><value>EPUB 2 / EPUB 3 に対応。表紙は JPG、PNG、GIF、WEBP、SVG に対応。</value></data>
+  <data name="Author" xml:space="preserve"><value>作者：lanut | </value></data>
+  <data name="GithubHome" xml:space="preserve"><value> GitHub プロジェクト</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>最近のタスクはありません</value></data>
+  <data name="SelectEpubFile" xml:space="preserve"><value>EPUB ファイルを選択</value></data>
+  <data name="SelectFilesToMerge" xml:space="preserve"><value>結合する EPUB ファイルを選択してください</value></data>
+  <data name="EpubFileFilter" xml:space="preserve"><value>EPUB ファイル|*.epub|すべてのファイル|*.*</value></data>
+  <data name="SelectEpubFolder" xml:space="preserve"><value>EPUB フォルダーを選択</value></data>
+  <data name="SaveMergedEpub" xml:space="preserve"><value>結合した EPUB を保存</value></data>
+  <data name="SelectCoverImage" xml:space="preserve"><value>表紙画像を選択</value></data>
+  <data name="ImageFileFilter" xml:space="preserve"><value>画像ファイル|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.svg|すべてのファイル|*.*</value></data>
+  <data name="ExportCoverImage" xml:space="preserve"><value>表紙画像を書き出す</value></data>
+  <data name="ImageFilter" xml:space="preserve"><value>画像ファイル|*{0}|すべてのファイル|*.*</value></data>
+  <data name="CoverMissing" xml:space="preserve"><value>「{0}」には有効な表紙画像がありません</value></data>
+  <data name="OpenEpubFailed" xml:space="preserve"><value>EPUB を開くアプリが見つかりません。EPUB リーダーをインストールするか、ファイルの関連付けを設定してください。</value></data>
+  <data name="OpenFileFailed" xml:space="preserve"><value>ファイルを開けませんでした</value></data>
+  <data name="NoCoverSelected" xml:space="preserve"><value>表紙画像が選択されていません</value></data>
+  <data name="SelectImagePreview" xml:space="preserve"><value>画像を選択するとプレビューできます</value></data>
+  <data name="NoFiles" xml:space="preserve"><value>ファイルは追加されていません</value></data>
+  <data name="FileCount" xml:space="preserve"><value>EPUB {0} 冊</value></data>
+  <data name="RestoredTask" xml:space="preserve"><value>履歴から設定を復元しました</value></data>
+  <data name="CoverExtracted" xml:space="preserve"><value>「{0}」から表紙を抽出しました</value></data>
+  <data name="CoverReadFailed" xml:space="preserve"><value>「{0}」の表紙を読み取れません：{1}</value></data>
+  <data name="Cancelling" xml:space="preserve"><value>結合をキャンセルしています…</value></data>
+  <data name="MergeAlreadyRunning" xml:space="preserve"><value>結合タスクは既に実行中です</value></data>
+  <data name="Merging" xml:space="preserve"><value>結合しています。お待ちください…</value></data>
+  <data name="ReadingBook" xml:space="preserve"><value>{0} 冊目の EPUB を読み込み中…</value></data>
+  <data name="MergedBooks" xml:space="preserve"><value>{0}/{1} 冊の EPUB を結合済み</value></data>
+  <data name="MergeCompleted" xml:space="preserve"><value>結合完了：{0}</value></data>
+  <data name="MergeCompletedTitle" xml:space="preserve"><value>結合完了</value></data>
+  <data name="OpenOutputPrompt" xml:space="preserve"><value>出力ファイルを開くか、エクスプローラーで表示できます。</value></data>
+  <data name="MergeFailed" xml:space="preserve"><value>結合に失敗しました</value></data>
+  <data name="MergeFailedRetry" xml:space="preserve"><value>結合に失敗しました。後でもう一度お試しください。</value></data>
+  <data name="MergeCanceled" xml:space="preserve"><value>結合をキャンセルしました</value></data>
+  <data name="ErrorLogSaved" xml:space="preserve"><value>詳細なエラーログの保存先：{0}</value></data>
+  <data name="LoadedImage" xml:space="preserve"><value>{0} 画像を読み込みました</value></data>
+  <data name="CoverFileMissing" xml:space="preserve"><value>表紙ファイルが存在しません
+画像を選び直してください</value></data>
+  <data name="CoverCannotDisplay" xml:space="preserve"><value>現在この画像を表示できません
+結合時の表紙としては使用できます</value></data>
+  <data name="CannotReadCoverPath" xml:space="preserve"><value>表紙のパスを読み取れません</value></data>
+  <data name="UnsupportedPreviewFormat" xml:space="preserve"><value>システムのデコーダーではこの形式をプレビューできません</value></data>
+  <data name="MergeErrorInvalidArguments" xml:space="preserve"><value>結合の設定が無効です。入力ファイル、出力先、書名を確認してください。</value></data>
+  <data name="MergeErrorFileNotFound" xml:space="preserve"><value>結合に必要なファイルが見つかりません。ファイルが存在し、アクセスできることを確認してください。</value></data>
+  <data name="MergeErrorUnauthorized" xml:space="preserve"><value>入力ファイルの読み取りまたは出力先への書き込み権限がありません。アクセスできるフォルダーを選択してください。</value></data>
+  <data name="MergeErrorIo" xml:space="preserve"><value>ファイルの入出力に失敗しました。他のアプリがファイルを使用していないか、ディスクの空き容量が十分か確認してください。</value></data>
+  <data name="MergeErrorInvalidData" xml:space="preserve"><value>EPUB の構造が無効か破損しています。入力ファイルを確認して再試行してください。</value></data>
+  <data name="MergeErrorXml" xml:space="preserve"><value>EPUB 内部のディレクトリが無効です。別のファイルで再試行してください。</value></data>
+  <data name="MergeErrorNotSupported" xml:space="preserve"><value>この EPUB には未対応の内容が含まれています。別のファイルで再試行してください。</value></data>
+  <data name="MergeErrorUnknown" xml:space="preserve"><value>結合に失敗しました。ファイルが破損しているか未対応の可能性があります。入力ファイルを確認して再試行してください。</value></data>
+  <data name="CoverReadDetails" xml:space="preserve"><value>ファイルにアクセスできないか、表紙の形式が未対応の可能性があります。</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>操作に失敗しました</value></data>
+  <data name="StorageFailed" xml:space="preserve"><value>アプリのデータを読み取りまたは保存できませんでした。フォルダーの権限とディスクの空き容量を確認してください。ローカルアプリデータのフォルダーに診断ログの記録を試みました。</value></data>
+  <data name="RecursivePrompt" xml:space="preserve"><value>サブフォルダー内の EPUB ファイルも追加しますか？</value></data>
+  <data name="Yes" xml:space="preserve"><value>はい</value></data>
+  <data name="No" xml:space="preserve"><value>いいえ</value></data>
+  <data name="Close" xml:space="preserve"><value>閉じる</value></data>
+</root>

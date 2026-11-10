@@ -18,6 +18,7 @@ public sealed partial class MainWindow : Window
 {
     private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
     private readonly LocalizedStrings _strings = new();
+    private readonly LanguagePreference _languagePreference;
     private readonly Queue<(string Title, string Message)> _messages = new();
     private BookFile[] _draggedFiles = [];
     private TaskbarProgress? _taskbar;
@@ -27,13 +28,20 @@ public sealed partial class MainWindow : Window
     private bool _previewFailed;
 
     public MainViewModel ViewModel { get; }
-    public IReadOnlyList<LanguageOption> Languages => LanguageManager.Languages;
+    public LocalizedStrings Strings => _strings;
 
-    public MainWindow(MainViewModel viewModel)
+    public MainWindow(MainViewModel viewModel, LanguagePreference languagePreference, IReadOnlyList<Exception> startupErrors)
     {
         ViewModel = viewModel;
+        _languagePreference = languagePreference;
         InitializeComponent();
-        Root.DataContext = _strings;
+        foreach (var language in LanguageManager.Languages)
+        {
+            var item = new ToggleMenuFlyoutItem { Text = language.DisplayName, Tag = language.CultureName };
+            item.Click += Language_Click;
+            LanguageMenu.Items.Add(item);
+        }
+        UpdateLanguageMenu();
         Title = LanguageManager.Get("WindowTitle");
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"));
         AppWindow.Resize(new SizeInt32(1200, 800));
@@ -46,6 +54,7 @@ public sealed partial class MainWindow : Window
         ViewModel.Files.CollectionChanged += Files_Changed;
         LanguageManager.CultureChanged += Culture_Changed;
         ApplicationPaths.StorageError += Storage_Error;
+        foreach (var exception in startupErrors) Storage_Error(this, exception);
         ThemeManager.Initialize(Root);
         UpdateState();
         UpdateTitleBar();
@@ -53,7 +62,6 @@ public sealed partial class MainWindow : Window
 
     private void Root_Loaded(object sender, RoutedEventArgs e)
     {
-        LanguagePicker.SelectedIndex = Languages.ToList().FindIndex(language => language.CultureName == ViewModel.SelectedLanguage);
         EnforceMinimumSize();
         try { _taskbar = new TaskbarProgress(WinRT.Interop.WindowNative.GetWindowHandle(this)); }
         catch (Exception exception) when (exception is System.Runtime.InteropServices.COMException)
@@ -119,14 +127,28 @@ public sealed partial class MainWindow : Window
     private void Culture_Changed(object? sender, EventArgs args)
     {
         Title = LanguageManager.Get("WindowTitle");
+        UpdateLanguageMenu();
         PreviewStatus.Text = LanguageManager.Get(_previewFailed ? "CoverReadDetails" : "SelectImagePreview");
         if (!_previewFailed) PreviewStatus.Text = ViewModel.CoverPreviewStatus;
     }
 
-    private void Language_SelectionChanged(object sender, SelectionChangedEventArgs args)
+    private void UpdateLanguageMenu()
     {
-        if (LanguagePicker.SelectedItem is LanguageOption language)
-            ViewModel.SelectedLanguage = language.CultureName;
+        LanguagePicker.Content = LanguageManager.Languages.First(language =>
+            language.CultureName == LanguageManager.CurrentCulture.Name).DisplayName;
+        foreach (var item in LanguageMenu.Items.OfType<ToggleMenuFlyoutItem>())
+            item.IsChecked = (string)item.Tag == LanguageManager.CurrentCulture.Name;
+    }
+
+    private void Language_Click(object sender, RoutedEventArgs args)
+    {
+        if (sender is not ToggleMenuFlyoutItem { Tag: string cultureName }) return;
+        if (cultureName != ViewModel.SelectedLanguage)
+        {
+            ViewModel.SelectedLanguage = cultureName;
+            _languagePreference.Save(cultureName);
+        }
+        UpdateLanguageMenu();
     }
 
     private void Storage_Error(object? sender, Exception exception)
@@ -281,7 +303,6 @@ public sealed partial class MainWindow : Window
         if (sender is not MenuFlyout menu) return;
         foreach (var item in menu.Items.OfType<MenuFlyoutItem>())
         {
-            item.DataContext = _strings;
             item.IsEnabled = ViewModel.CanEditWithSelection;
         }
     }
@@ -418,9 +439,9 @@ public sealed partial class MainWindow : Window
         {
             var choice = await ShowDialogAsync(LanguageManager.Get("MergeCompletedTitle"),
                 LanguageManager.Get("MergeCompleted", result.OutputPath!) + "\n\n" + LanguageManager.Get("OpenOutputPrompt"),
-                LanguageManager.Get("OpenWithDefault"), LanguageManager.Get("LocateInExplorer"));
+                LanguageManager.Get("OpenWithDefault"), secondary: LanguageManager.Get("LocateInExplorer"));
             if (choice == ContentDialogResult.Primary) OpenPath(result.OutputPath!);
-            else LocatePath(result.OutputPath!);
+            else if (choice == ContentDialogResult.Secondary) LocatePath(result.OutputPath!);
         }
         else if (!result.Canceled)
             QueueMessage(LanguageManager.Get("MergeFailed"), result.Error ?? LanguageManager.Get("MergeFailedRetry"));
@@ -453,6 +474,15 @@ public sealed partial class MainWindow : Window
         _ = DrainMessagesAsync();
     }
 
+    private void Disclaimer_Click(object sender, RoutedEventArgs args) =>
+        QueueMessage("Disclaimer",
+            "EPUB Merger is provided \"as is\", without warranty of any kind, express or implied. " +
+            "To the extent permitted by applicable law, the authors and copyright holders are not liable for claims, damages or other liability arising from its use.\n\n" +
+            "Keep backups and verify merged files before relying on them. Compatibility with every EPUB file or reader is not guaranteed.\n\n" +
+            "Only process content that you own or are authorized to use. You are responsible for complying with applicable copyright laws and license terms. " +
+            "This application does not remove DRM or grant rights to third-party content.\n\n" +
+            "See the MIT License in the project repository for the full license terms.");
+
     private async Task DrainMessagesAsync()
     {
         if (_dialogOpen || Root.XamlRoot is null || _closing) return;
@@ -463,7 +493,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private async Task<ContentDialogResult> ShowDialogAsync(string title, string message, string? primary = null, string? close = null)
+    private async Task<ContentDialogResult> ShowDialogAsync(string title, string message, string? primary = null, string? close = null, string? secondary = null)
     {
         if (_closing) return ContentDialogResult.None;
         // All dialogs are owned by this window and serialized with queued notifications.
@@ -478,6 +508,7 @@ public sealed partial class MainWindow : Window
                 Title = title,
                 Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true },
                 PrimaryButtonText = primary ?? string.Empty,
+                SecondaryButtonText = secondary ?? string.Empty,
                 CloseButtonText = close ?? LanguageManager.Get("Close")
             }.ShowAsync();
         }

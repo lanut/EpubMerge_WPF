@@ -6,6 +6,10 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
+        <Content Include="..\..\src\EpubMerge.Presentation\Resources\Language*.resx"
+                 Link="Localization\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="..\..\src\EpubMerge.Gui.WinUI\Package.appxmanifest.template"
+                 Link="Localization\Package.appxmanifest.template" CopyToOutputDirectory="PreserveNewest" />
         <ProjectReference Include="..\..\src\EpubMerge.Presentation\EpubMerge.Presentation.csproj"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0"/>
         <PackageReference Include="xunit" Version="2.9.3"/>

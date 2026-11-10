@@ -3,4 +3,12 @@
         <BaseIntermediateOutputPath>obj\Store\</BaseIntermediateOutputPath>
         <BaseOutputPath>bin\Store\</BaseOutputPath>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(MSBuildProjectName)' == 'EpubMerge.Gui.WinUI' and '$(PublishAot)' == 'true' and '$(StorePackage)' != 'true'">
+        <BaseIntermediateOutputPath>obj\Aot\Unpackaged\</BaseIntermediateOutputPath>
+        <BaseOutputPath>bin\Aot\Unpackaged\</BaseOutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(MSBuildProjectName)' == 'EpubMerge.Gui.WinUI' and '$(PublishAot)' == 'true' and '$(StorePackage)' == 'true'">
+        <BaseIntermediateOutputPath>obj\Aot\Store\</BaseIntermediateOutputPath>
+        <BaseOutputPath>bin\Aot\Store\</BaseOutputPath>
+    </PropertyGroup>
 </Project>

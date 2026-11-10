@@ -55,6 +55,35 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public void Compiled_localization_binding_refreshes_and_unsubscribes()
+    {
+        LanguageManager.SetCulture("zh-CN");
+        var strings = new LocalizedStrings();
+        var changes = new List<string?>();
+        strings.PropertyChanged += (_, args) => changes.Add(args.PropertyName);
+        Assert.Equal("添加文件", strings.Get("AddFiles"));
+
+        try
+        {
+            LanguageManager.SetCulture("en-US");
+            Assert.Equal("Add files", strings.Get("AddFiles"));
+            Assert.Equal(strings["AddFiles"], strings.Get("AddFiles"));
+            Assert.Contains(nameof(LocalizedStrings.Get), changes);
+            Assert.Contains("Item[]", changes);
+
+            strings.Dispose();
+            changes.Clear();
+            LanguageManager.SetCulture("zh-CN");
+            Assert.Empty(changes);
+        }
+        finally
+        {
+            strings.Dispose();
+            LanguageManager.SetCulture("zh-CN");
+        }
+    }
+
+    [Fact]
     public void Selection_commands_follow_busy_and_selection_state()
     {
         using var viewModel = CreateViewModel();

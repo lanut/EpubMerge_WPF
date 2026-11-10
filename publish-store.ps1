@@ -8,6 +8,9 @@ param(
 
     [string]$SettingsPath = (Join-Path $PSScriptRoot 'packaging\store-settings.json'),
 
+    [ValidateSet('Managed', 'NativeAot')]
+    [string]$CompilationMode = 'Managed',
+
     [switch]$Demo
 )
 
@@ -47,13 +50,20 @@ if (-not (Test-Path -LiteralPath $vswhere)) { throw 'Visual Studio with MSBuild 
 $msbuild = & $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' |
     Select-Object -First 1
 if (-not $msbuild) { throw 'Visual Studio MSBuild.exe was not found.' }
+$nativeAot = $CompilationMode -eq 'NativeAot'
+$dumpbin = $null
+if ($nativeAot) {
+    $dumpbin = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+        -find 'VC\Tools\MSVC\**\bin\Hostx64\x64\dumpbin.exe' | Select-Object -First 1
+    if (-not $dumpbin) { throw 'NativeAot requires the MSVC C++ x64/x86 build tools (and ARM64 tools for win-arm64).' }
+}
 $sdkBin = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin\10.0.26100.0\x64'
 $makeappx = Join-Path $sdkBin 'makeappx.exe'
 if (-not (Test-Path -LiteralPath $makeappx)) { throw 'Install Windows SDK 26100 (including MakeAppx).' }
 
 $platform = if ($RuntimeIdentifier -eq 'win-arm64') { 'ARM64' } else { 'x64' }
 $mode = if ($Demo) { 'demo' } else { 'store' }
-$output = Join-Path $PSScriptRoot "publish\msix\$mode\$PackageVersion\$RuntimeIdentifier"
+$output = Join-Path $PSScriptRoot "publish\msix\$mode\$PackageVersion\$CompilationMode\$RuntimeIdentifier"
 if (Test-Path -LiteralPath $output) { Remove-Item -LiteralPath $output -Recurse -Force }
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 $work = Join-Path $output 'work'
@@ -73,10 +83,12 @@ $manifest.Save($manifestPath)
 
 $arguments = @(
     (Join-Path $PSScriptRoot 'src\EpubMerge.Gui.WinUI\EpubMerge.Gui.WinUI.csproj'),
-    '/restore', '/t:Build', '/nologo', '/verbosity:minimal',
+    '/restore', '/t:Rebuild', '/nologo', '/verbosity:minimal',
     '/p:Configuration=Release', "/p:Platform=$platform", "/p:RuntimeIdentifier=$RuntimeIdentifier",
     '/p:StorePackage=true', "/p:StoreManifestPath=$manifestPath",
+    "/p:PublishAot=$($nativeAot.ToString().ToLowerInvariant())",
     "/p:AppxPackageDir=$output\",
+    "/bl:$output\build.binlog",
     '/p:GenerateDocumentationFile=false', '/p:DebugSymbols=false', '/p:DebugType=None'
 )
 & $msbuild @arguments
@@ -107,10 +119,28 @@ if ($builtManifest.Package.Identity.Name -ne $settings.IdentityName -or
     $builtManifest.Package.Identity.ProcessorArchitecture -ne $platform.ToLowerInvariant()) {
     throw 'Built package identity, version or architecture did not match the request.'
 }
-foreach ($asset in @('EpubMerge.Gui.WinUI.exe', 'EpubMerge.Gui.WinUI.dll', 'EpubMerge.Presentation.dll',
-    'EpubMerge.Core.Pure.dll', 'coreclr.dll', 'EpubMerge.Gui.WinUI.runtimeconfig.json',
-    'resources.pri', 'en\EpubMerge.Presentation.resources.dll',
-    'Assets\Store\StoreLogo.png', 'Assets\Store\Square44x44Logo.png', 'Assets\Store\Square150x150Logo.png')) {
+$application = $builtManifest.Package.Applications.Application
+if ($application.Executable -ne 'EpubMerge.Gui.WinUI.exe' -or
+    $application.EntryPoint -ne 'Windows.FullTrustApplication') {
+    throw 'Store package must launch the WinUI full-trust desktop executable.'
+}
+$requiredAssets = @('EpubMerge.Gui.WinUI.exe', 'resources.pri',
+    'Assets\AppIcon.ico',
+    'Assets\Store\StoreLogo.png', 'Assets\Store\Square44x44Logo.png', 'Assets\Store\Square150x150Logo.png')
+$managedAssets = @('EpubMerge.Gui.WinUI.dll', 'EpubMerge.Presentation.dll',
+    'EpubMerge.Core.Pure.dll', 'coreclr.dll', 'EpubMerge.Gui.WinUI.runtimeconfig.json')
+$resourceDirectory = Join-Path $PSScriptRoot 'src\EpubMerge.Presentation\Resources'
+$managedAssets += @(Get-ChildItem -LiteralPath $resourceDirectory -Filter 'Language.*.resx' -File | ForEach-Object {
+    $culture = $_.Name.Substring('Language.'.Length, $_.Name.Length - 'Language.'.Length - '.resx'.Length)
+    "$culture\EpubMerge.Presentation.resources.dll"
+})
+$expectedLanguages = @($manifest.Package.Resources.Resource | ForEach-Object { $_.Language } | Sort-Object)
+$actualLanguages = @($builtManifest.Package.Resources.Resource | ForEach-Object { $_.Language } | Sort-Object)
+if (Compare-Object $expectedLanguages $actualLanguages) {
+    throw 'Built package languages do not match the Store manifest template.'
+}
+if (-not $nativeAot) { $requiredAssets += $managedAssets }
+foreach ($asset in $requiredAssets) {
     if (-not (Test-Path -LiteralPath (Join-Path $unpacked $asset) -PathType Leaf)) {
         throw "Missing Store payload: $asset"
     }
@@ -123,11 +153,25 @@ if ($machine -ne $expectedMachine) { throw 'MSIX executable architecture does no
 if (Test-Path -LiteralPath (Join-Path $unpacked 'Microsoft.UI.Xaml.dll')) {
     throw 'Store package unexpectedly embeds Windows App SDK instead of using the framework dependency.'
 }
-$runtime = Get-Content -Raw -LiteralPath (Join-Path $unpacked 'EpubMerge.Gui.WinUI.runtimeconfig.json') | ConvertFrom-Json
-if ($runtime.runtimeOptions.PSObject.Properties['framework'] -or
-    $runtime.runtimeOptions.PSObject.Properties['frameworks'] -or
-    -not ($runtime.runtimeOptions.includedFrameworks | Where-Object { $_.name -eq 'Microsoft.NETCore.App' })) {
-    throw 'Store runtime configuration must be self-contained for .NET.'
+if ($nativeAot) {
+    foreach ($asset in $managedAssets + @('hostfxr.dll', 'hostpolicy.dll', 'EpubMerge.Gui.WinUI.deps.json')) {
+        if (Test-Path -LiteralPath (Join-Path $unpacked $asset)) {
+            throw "NativeAot package contains managed runtime payload: $asset"
+        }
+    }
+    $exports = & $dumpbin /exports (Join-Path $unpacked 'EpubMerge.Gui.WinUI.exe')
+    if ($LASTEXITCODE -ne 0 -or -not ($exports -match '\bDotNetRuntimeDebugHeader\b')) {
+        throw 'Packaged executable is not the expected Native AOT image (missing native runtime export).'
+    }
+    $exports | Set-Content -LiteralPath (Join-Path $output 'native-exports.txt')
+}
+else {
+    $runtime = Get-Content -Raw -LiteralPath (Join-Path $unpacked 'EpubMerge.Gui.WinUI.runtimeconfig.json') | ConvertFrom-Json
+    if ($runtime.runtimeOptions.PSObject.Properties['framework'] -or
+        $runtime.runtimeOptions.PSObject.Properties['frameworks'] -or
+        -not ($runtime.runtimeOptions.includedFrameworks | Where-Object { $_.name -eq 'Microsoft.NETCore.App' })) {
+        throw 'Store runtime configuration must be self-contained for .NET.'
+    }
 }
 $dependencies = @($builtManifest.Package.Dependencies.PackageDependency)
 if (-not ($dependencies | Where-Object { $_.Name -like 'Microsoft.WindowsAppRuntime*' })) {
@@ -144,8 +188,10 @@ $report = [ordered]@{
     Publisher = $settings.Publisher
     Version = $PackageVersion
     Architecture = $platform
-    DotNet = 'SelfContained'
+    CompilationMode = $CompilationMode
+    DotNet = if ($nativeAot) { 'NativeAot' } else { 'SelfContained' }
     WindowsAppSDK = 'FrameworkDependent'
+    Languages = $actualLanguages
     Dependencies = @($dependencies | ForEach-Object { "$($_.Name) >= $($_.MinVersion)" })
     Signed = $false
 }

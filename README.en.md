@@ -2,7 +2,7 @@
 
 [中文文档](README.md)
 
-A simple Windows desktop EPUB merger with two independent GUIs: the original WPF application and an unpackaged WinUI 3 application. Both use .NET 10; WinUI uses Windows App SDK 2.6.5. It combines multiple EPUB files into a single EPUB 3 file in the specified order, while keeping each source book as a top-level item in the merged contents. The application supports drag-and-drop ordering, custom titles and output paths, cover preview, bilingual UI, and system, light, and dark themes.
+A simple Windows desktop EPUB merger with two independent GUIs: the original WPF application and an unpackaged WinUI 3 application. Both use .NET 10; WinUI uses Windows App SDK 2.6.5. It combines multiple EPUB files into a single EPUB 3 file in the specified order, while keeping each source book as a top-level item in the merged contents. The application supports drag-and-drop ordering, custom titles and output paths, cover preview, multilingual UI, and system, light, and dark themes.
 
 ## Screenshots
 
@@ -55,7 +55,7 @@ The output file must use the `.epub` extension and must not overwrite an input f
 
 ## CLI mode
 
-The published package contains a standalone CLI executable that does not create a window. WPF, WinUI and CLI use separate `wpf`, `winui` and `cli` subdirectories to keep their runtime dependencies isolated. Run the following commands from the `cli` directory:
+GitHub packages contain WPF and a standalone CLI executable that does not create a window, in separate `wpf` and `cli` directories. WinUI is distributed only as a Store MSIX. Run the following commands from the `cli` directory:
 
 ```powershell
 EpubMerge.Cli.exe -i .\vol*.epub -o .\merged.epub --title "Collection"
@@ -81,15 +81,23 @@ CLI exit codes are `0` (success), `1` (argument or input validation failure), an
 ## Requirements
 
 - Windows 11, x64 or ARM64 (x64 verified locally; other operating systems must meet both .NET 10 and Windows App SDK support requirements)
-- Self-contained packages bundle the .NET / Windows Desktop / Windows App SDK runtimes required by each host
+- GitHub self-contained packages bundle the .NET / Windows Desktop runtimes required by WPF and CLI
 - Framework-dependent WPF requires .NET 10 Desktop Runtime for the matching architecture
-- Framework-dependent WinUI requires .NET 10 Runtime and Windows App Runtime 2.6.5 for the matching architecture
+- WinUI Store packages include the required .NET support; the Store deploys Windows App Runtime 2.6.5 as a framework dependency. Local unpackaged development requires that runtime to be installed
 - Framework-dependent CLI requires .NET 10 Runtime for the matching architecture
 - WinUI cover previews use system image decoders; unsupported images produce an explicit preview error without modifying the source
 
 The GUIs do not import or synchronize each other's data. WPF retains its original behavior: history in `EpubMerge.Gui\history.json` beneath the application directory, logs in the application directory, and theme settings in `HKCU\Software\EpubMerge.Gui`. WinUI retains history, logs and cache in `%LOCALAPPDATA%\EpubMerge`, with an independent theme key at `HKCU\Software\EpubMerge.Gui.WinUI`; it does not automatically import WPF history.
 
 ## Build
+
+### WinUI interface languages
+
+The language dropdown button shows the current language and marks the selected menu item. WinUI supports Simplified Chinese, Traditional Chinese, English, Japanese, Korean, French, German, Spanish, Brazilian Portuguese and Russian. Language names are shown in their own language.
+
+On first launch, the system UI language is matched to a supported language, falling back to English. Explicit choices are saved in `LanguagePreference` under `HKCU\Software\EpubMerge.Gui.WinUI` and take priority on later launches. The initial system match is not saved. To follow the system again, close WinUI and remove only that registry value.
+
+Switching translates the application UI, not book titles, filenames, EPUB contents or third-party exception text. System pickers may use the system language. Native-speaker review of the new translations is welcome. WPF remains bilingual; CLI behavior is unchanged.
 
 Run the following commands from the repository root:
 
@@ -134,13 +142,12 @@ The workflow builds both GUIs and runs all tests, then creates four archives on 
 
 ```text
 wpf\EpubMerge.Gui.exe
-winui\EpubMerge.Gui.WinUI.exe
 cli\EpubMerge.Cli.exe
 ```
 
-Dependencies are isolated across the three directories. Distribute the entire `winui` directory: WinUI is not a single-file executable. WPF and CLI retain single-file managed assembly bundling; keep any accompanying native dependencies. Self-contained packages include the runtimes required by each host.
+Dependencies are isolated across the two directories. WPF and CLI retain single-file managed assembly bundling; keep any accompanying native dependencies. Self-contained packages include the required runtimes. If an old output directory still contains `winui`, move it elsewhere or explicitly use `-Clean`.
 
-Development requires the .NET 10 SDK, Visual Studio WinUI tools and Windows SDK 26100. `global.json` excludes preview SDKs. Local ARM tools are not required. Native AOT remains out of scope.
+Development requires the .NET 10 SDK, Visual Studio WinUI tools and Windows SDK 26100. `global.json` excludes preview SDKs. Local ARM tools are not required. Experimental WinUI Native AOT additionally requires Desktop development with C++ and MSVC x64/x86 tools; WPF/CLI do not use AOT.
 
 ## Microsoft Store MSIX
 
@@ -151,7 +158,9 @@ WinUI also supports an explicit single-project MSIX mode. GitHub Release continu
 .\publish-store.ps1 -PackageVersion 1.2.3.0 -RuntimeIdentifier win-x64 -Demo
 ```
 
-The independent **Build Microsoft Store packages** workflow supports manual demo/production builds; `V1.2.3` tags automatically build production version `1.2.3.0`. Packages are uploaded only as Actions artifacts, never automatically submitted to the Store or attached to GitHub Release. Production builds fail explicitly until real product identity is configured; the separate ZIP release remains independent.
+The independent **Build Microsoft Store packages** workflow is **manual-only**, with an explicit version and demo/production choice. `compilation_mode` defaults to `Managed`, with experimental `NativeAot` available. Both use the same Windows App SDK framework dependency, not a second SDK deployment tier. Packages are saved only as Actions artifacts for manual Store submission, never attached to GitHub Release. V tags publish only WPF/CLI ZIPs. Production builds fail until real product identity is configured.
+
+x64 native compilation, actual AOT MSIX payload validation and unpackaged localization/theme/history/real-merge comparison with Managed pass. Packaged installation/runtime acceptance and ARM64 verification remain pending, so Managed remains the Store default. See the Store guide for diagnostic commands and isolated-environment acceptance.
 
 See the [Microsoft Store setup and first-submission guide (Chinese)](docs/MICROSOFT-STORE.md) to continue from another computer: product creation, identity configuration, versions, signing/local testing, artifact downloads and manual Partner Center submission.
 
@@ -180,6 +189,18 @@ readmeRef/              README screenshots
 - The merged result is an EPUB 3 container with regenerated navigation and table-of-contents information.
 - Encrypted or font-obfuscated EPUB files containing `META-INF/encryption.xml` are not currently supported.
 - Source files are read only; the application does not modify the original EPUB files.
+
+## Disclaimer
+
+The WinUI footer includes the author, a vector GitHub icon linking to the project, and a **Disclaimer** link. The disclaimer is always displayed in English; its Close button follows the selected UI language.
+
+EPUB Merger is provided "as is", without warranty of any kind, express or implied. To the extent permitted by applicable law, the authors and copyright holders are not liable for claims, damages or other liability arising from its use.
+
+Keep backups and verify merged files before relying on them. Compatibility with every EPUB file or reader is not guaranteed.
+
+Only process content that you own or are authorized to use. You are responsible for complying with applicable copyright laws and license terms. This application does not remove DRM or grant rights to third-party content.
+
+See the MIT License in the project repository for the full license terms.
 
 ## License
 

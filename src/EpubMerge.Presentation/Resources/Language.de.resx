@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="WindowTitle" xml:space="preserve"><value>EPUB-Zusammenführung</value></data>
+  <data name="Theme" xml:space="preserve"><value>Design</value></data>
+  <data name="System" xml:space="preserve"><value>System</value></data>
+  <data name="Light" xml:space="preserve"><value>Hell</value></data>
+  <data name="Dark" xml:space="preserve"><value>Dunkel</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Sprache</value></data>
+  <data name="Chinese" xml:space="preserve"><value>Chinesisch</value></data>
+  <data name="English" xml:space="preserve"><value>Englisch</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>Zusammenführung in Listenreihenfolge; jedes Buch wird ein Haupteintrag im Inhaltsverzeichnis.</value></data>
+  <data name="InputEpub" xml:space="preserve"><value>EPUB-Quelldateien</value></data>
+  <data name="SetCoverFromBook" xml:space="preserve"><value>Als Buchcover verwenden</value></data>
+  <data name="ExportCover" xml:space="preserve"><value>Coverbild exportieren</value></data>
+  <data name="LocateInExplorer" xml:space="preserve"><value>Im Explorer anzeigen</value></data>
+  <data name="OpenWithDefault" xml:space="preserve"><value>Mit Standard-App öffnen</value></data>
+  <data name="MoveTop" xml:space="preserve"><value>Ganz nach oben</value></data>
+  <data name="MoveBottom" xml:space="preserve"><value>Ganz nach unten</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Nach oben</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Nach unten</value></data>
+  <data name="RemoveSelected" xml:space="preserve"><value>Auswahl entfernen</value></data>
+  <data name="FileName" xml:space="preserve"><value>Dateiname</value></data>
+  <data name="FullPath" xml:space="preserve"><value>Vollständiger Pfad</value></data>
+  <data name="DropEpub" xml:space="preserve"><value>EPUB-Dateien hier ablegen</value></data>
+  <data name="AddFilesHint" xml:space="preserve"><value>Oder Dateien über die Schaltflächen unten hinzufügen</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>Dateien hinzufügen</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>Ordner hinzufügen</value></data>
+  <data name="Remove" xml:space="preserve"><value>Entfernen</value></data>
+  <data name="Clear" xml:space="preserve"><value>Leeren</value></data>
+  <data name="MergeSettings" xml:space="preserve"><value>Zusammenführungsoptionen</value></data>
+  <data name="OutputFile" xml:space="preserve"><value>Ausgabedatei</value></data>
+  <data name="ChooseLocation" xml:space="preserve"><value>Speicherort wählen</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>Titel des Sammelbands</value></data>
+  <data name="CoverPreview" xml:space="preserve"><value>Covervorschau</value></data>
+  <data name="DropImageHint" xml:space="preserve"><value>Bild für die Vorschau ablegen</value></data>
+  <data name="ExistingCoverHint" xml:space="preserve"><value>Ein vorhandenes Buchcover kann verwendet werden</value></data>
+  <data name="CoverPath" xml:space="preserve"><value>Pfad zum Coverbild</value></data>
+  <data name="ChooseCover" xml:space="preserve"><value>Cover wählen</value></data>
+  <data name="History" xml:space="preserve"><value>Verlauf</value></data>
+  <data name="StartMerge" xml:space="preserve"><value>Zusammenführen</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="SupportedFormats" xml:space="preserve"><value>EPUB 2 / EPUB 3 unterstützt; Cover: JPG, PNG, GIF, WEBP und SVG.</value></data>
+  <data name="Author" xml:space="preserve"><value>Autor: lanut | </value></data>
+  <data name="GithubHome" xml:space="preserve"><value> GitHub-Projekt</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Keine kürzlichen Aufgaben</value></data>
+  <data name="SelectEpubFile" xml:space="preserve"><value>EPUB-Dateien wählen</value></data>
+  <data name="SelectFilesToMerge" xml:space="preserve"><value>EPUB-Dateien zum Zusammenführen wählen</value></data>
+  <data name="EpubFileFilter" xml:space="preserve"><value>EPUB-Dateien|*.epub|Alle Dateien|*.*</value></data>
+  <data name="SelectEpubFolder" xml:space="preserve"><value>EPUB-Ordner wählen</value></data>
+  <data name="SaveMergedEpub" xml:space="preserve"><value>Zusammengeführtes EPUB speichern</value></data>
+  <data name="SelectCoverImage" xml:space="preserve"><value>Coverbild wählen</value></data>
+  <data name="ImageFileFilter" xml:space="preserve"><value>Bilddateien|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.svg|Alle Dateien|*.*</value></data>
+  <data name="ExportCoverImage" xml:space="preserve"><value>Coverbild exportieren</value></data>
+  <data name="ImageFilter" xml:space="preserve"><value>Bilddateien|*{0}|Alle Dateien|*.*</value></data>
+  <data name="CoverMissing" xml:space="preserve"><value>„{0}“ enthält kein gültiges Coverbild</value></data>
+  <data name="OpenEpubFailed" xml:space="preserve"><value>Keine App zum Öffnen von EPUB-Dateien gefunden. Installieren Sie einen EPUB-Reader oder richten Sie die Dateizuordnung ein.</value></data>
+  <data name="OpenFileFailed" xml:space="preserve"><value>Datei konnte nicht geöffnet werden</value></data>
+  <data name="NoCoverSelected" xml:space="preserve"><value>Kein Coverbild gewählt</value></data>
+  <data name="SelectImagePreview" xml:space="preserve"><value>Bild für die Vorschau wählen</value></data>
+  <data name="NoFiles" xml:space="preserve"><value>Keine Dateien hinzugefügt</value></data>
+  <data name="FileCount" xml:space="preserve"><value>{0} EPUB-Datei(en)</value></data>
+  <data name="RestoredTask" xml:space="preserve"><value>Einstellungen aus dem Verlauf wiederhergestellt</value></data>
+  <data name="CoverExtracted" xml:space="preserve"><value>Cover aus „{0}“ extrahiert</value></data>
+  <data name="CoverReadFailed" xml:space="preserve"><value>Cover aus „{0}“ konnte nicht gelesen werden: {1}</value></data>
+  <data name="Cancelling" xml:space="preserve"><value>Zusammenführung wird abgebrochen…</value></data>
+  <data name="MergeAlreadyRunning" xml:space="preserve"><value>Eine Zusammenführung läuft bereits</value></data>
+  <data name="Merging" xml:space="preserve"><value>Zusammenführung läuft, bitte warten…</value></data>
+  <data name="ReadingBook" xml:space="preserve"><value>EPUB {0} wird gelesen…</value></data>
+  <data name="MergedBooks" xml:space="preserve"><value>{0}/{1} EPUB-Dateien zusammengeführt</value></data>
+  <data name="MergeCompleted" xml:space="preserve"><value>Zusammenführung abgeschlossen: {0}</value></data>
+  <data name="MergeCompletedTitle" xml:space="preserve"><value>Zusammenführung abgeschlossen</value></data>
+  <data name="OpenOutputPrompt" xml:space="preserve"><value>Öffnen Sie die Ausgabedatei oder zeigen Sie sie im Explorer an.</value></data>
+  <data name="MergeFailed" xml:space="preserve"><value>Zusammenführung fehlgeschlagen</value></data>
+  <data name="MergeFailedRetry" xml:space="preserve"><value>Die Zusammenführung ist fehlgeschlagen. Versuchen Sie es später erneut.</value></data>
+  <data name="MergeCanceled" xml:space="preserve"><value>Zusammenführung abgebrochen</value></data>
+  <data name="ErrorLogSaved" xml:space="preserve"><value>Ausführliches Fehlerprotokoll gespeichert unter: {0}</value></data>
+  <data name="LoadedImage" xml:space="preserve"><value>{0}-Bild geladen</value></data>
+  <data name="CoverFileMissing" xml:space="preserve"><value>Die Coverdatei existiert nicht
+Bitte wählen Sie erneut ein Bild</value></data>
+  <data name="CoverCannotDisplay" xml:space="preserve"><value>Dieses Bild kann derzeit nicht angezeigt werden
+Es kann dennoch als Cover verwendet werden</value></data>
+  <data name="CannotReadCoverPath" xml:space="preserve"><value>Coverpfad konnte nicht gelesen werden</value></data>
+  <data name="UnsupportedPreviewFormat" xml:space="preserve"><value>Der Systemdecoder unterstützt keine Vorschau dieses Formats</value></data>
+  <data name="MergeErrorInvalidArguments" xml:space="preserve"><value>Ungültige Einstellungen. Prüfen Sie Quelldateien, Ausgabepfad und Titel.</value></data>
+  <data name="MergeErrorFileNotFound" xml:space="preserve"><value>Eine benötigte Datei wurde nicht gefunden. Prüfen Sie, ob sie noch existiert und zugänglich ist.</value></data>
+  <data name="MergeErrorUnauthorized" xml:space="preserve"><value>Keine Berechtigung zum Lesen der Quelldateien oder Schreiben am Ausgabeort. Wählen Sie einen zugänglichen Ordner.</value></data>
+  <data name="MergeErrorIo" xml:space="preserve"><value>Dateizugriff fehlgeschlagen. Prüfen Sie, ob andere Apps die Dateien verwenden und genügend Speicherplatz verfügbar ist.</value></data>
+  <data name="MergeErrorInvalidData" xml:space="preserve"><value>Die EPUB-Struktur ist ungültig oder beschädigt. Prüfen Sie die Quelldateien und versuchen Sie es erneut.</value></data>
+  <data name="MergeErrorXml" xml:space="preserve"><value>Das interne EPUB-Verzeichnis ist ungültig. Versuchen Sie eine andere Datei.</value></data>
+  <data name="MergeErrorNotSupported" xml:space="preserve"><value>Dieses EPUB enthält nicht unterstützte Inhalte. Versuchen Sie eine andere Datei.</value></data>
+  <data name="MergeErrorUnknown" xml:space="preserve"><value>Die Zusammenführung ist fehlgeschlagen. Die Datei ist möglicherweise beschädigt oder nicht unterstützt. Prüfen Sie die Quelldateien.</value></data>
+  <data name="CoverReadDetails" xml:space="preserve"><value>Die Datei ist möglicherweise nicht zugänglich oder das Coverformat wird nicht unterstützt.</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>Vorgang fehlgeschlagen</value></data>
+  <data name="StorageFailed" xml:space="preserve"><value>Anwendungsdaten konnten nicht gelesen oder gespeichert werden. Prüfen Sie Ordnerberechtigungen und freien Speicherplatz. Die Diagnoseprotokollierung im lokalen Anwendungsdatenordner wurde versucht.</value></data>
+  <data name="RecursivePrompt" xml:space="preserve"><value>Auch EPUB-Dateien aus Unterordnern importieren?</value></data>
+  <data name="Yes" xml:space="preserve"><value>Ja</value></data>
+  <data name="No" xml:space="preserve"><value>Nein</value></data>
+  <data name="Close" xml:space="preserve"><value>Schließen</value></data>
+</root>

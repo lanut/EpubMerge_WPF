@@ -89,7 +89,7 @@ jobs:
         run: |
           $modeDirectory = if ('${{ matrix.mode }}' -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
           $expected = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 0xAA64 } else { 0x8664 }
-          foreach ($relative in @('wpf\EpubMerge.Gui.exe', 'winui\EpubMerge.Gui.WinUI.exe', 'cli\EpubMerge.Cli.exe')) {
+          foreach ($relative in @('wpf\EpubMerge.Gui.exe', 'cli\EpubMerge.Cli.exe')) {
             $path = "publish\${{ matrix.runtime }}\$modeDirectory\$relative"
             $bytes = [System.IO.File]::ReadAllBytes($path)
             $peOffset = [BitConverter]::ToInt32($bytes, 0x3c)
@@ -99,7 +99,16 @@ jobs:
 
       - name: Create archive
         shell: pwsh
-        run: Compress-Archive -Path "publish\${{ matrix.runtime }}\${{ matrix.mode == 'SelfContained' && 'self-contained' || 'framework-dependent' }}\*" -DestinationPath "${{ matrix.runtime }}-${{ matrix.mode }}.zip"
+        run: |
+          $root = "publish\${{ matrix.runtime }}\${{ matrix.mode == 'SelfContained' && 'self-contained' || 'framework-dependent' }}"
+          $archive = "${{ matrix.runtime }}-${{ matrix.mode }}.zip"
+          Compress-Archive -Path "$root\wpf", "$root\cli" -DestinationPath $archive
+          $zip = [IO.Compression.ZipFile]::OpenRead((Join-Path $PWD $archive))
+          try {
+            $folders = @($zip.Entries | ForEach-Object { ($_.FullName -split '[/\\]')[0] } | Sort-Object -Unique)
+            if (($folders -join ',') -ne 'cli,wpf') { throw "Unexpected ZIP roots: $folders" }
+          }
+          finally { $zip.Dispose() }
 
       - name: Upload archive
         uses: actions/upload-artifact@v4

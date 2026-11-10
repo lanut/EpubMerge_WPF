@@ -9,6 +9,7 @@
         <WindowsPackageType Condition="'$(StorePackage)' != 'true'">None</WindowsPackageType>
         <WindowsPackageType Condition="'$(StorePackage)' == 'true'">MSIX</WindowsPackageType>
         <EnableMsixTooling>true</EnableMsixTooling>
+        <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
         <WinUISDKReferences>false</WinUISDKReferences>
         <Platforms>x64;ARM64</Platforms>
         <Platform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">x64</Platform>
@@ -25,7 +26,7 @@
         <SelfContained>true</SelfContained>
         <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
         <PublishSingleFile>false</PublishSingleFile>
-        <PublishTrimmed>false</PublishTrimmed>
+        <PublishTrimmed Condition="'$(PublishAot)' != 'true'">false</PublishTrimmed>
         <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
         <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
         <AppxAutoIncrementPackageRevision>false</AppxAutoIncrementPackageRevision>
@@ -39,6 +40,13 @@
     <Target Name="ValidateStoreManifest" BeforeTargets="PrepareForBuild" Condition="'$(StorePackage)' == 'true'">
         <Error Condition="'$(StoreManifestPath)' == '' or !Exists('$(StoreManifestPath)')"
                Text="Build Store packages using publish-store.ps1, which validates the identity and generates the manifest." />
+    </Target>
+    <Target Name="RemoveNativeAotHostMetadata" AfterTargets="GetPackagingOutputs" BeforeTargets="_ComputeAppxPackagePayload"
+            Condition="'$(StorePackage)' == 'true' and '$(PublishAot)' == 'true'">
+        <ItemGroup>
+            <PackagingOutputs Remove="@(PackagingOutputs)"
+                              Condition="'%(PackagingOutputs.TargetPath)' == '$(AssemblyName).runtimeconfig.json' or '%(PackagingOutputs.TargetPath)' == '$(AssemblyName).deps.json'" />
+        </ItemGroup>
     </Target>
     <ItemGroup>
         <ProjectReference Include="..\EpubMerge.Presentation\EpubMerge.Presentation.csproj" />

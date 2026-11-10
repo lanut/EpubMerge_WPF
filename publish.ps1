@@ -19,10 +19,9 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $wpfProjectPath = Join-Path $PSScriptRoot 'src\EpubMerge.Gui\EpubMerge.Gui.csproj'
-$winuiProjectPath = Join-Path $PSScriptRoot 'src\EpubMerge.Gui.WinUI\EpubMerge.Gui.WinUI.csproj'
 $cliProjectPath = Join-Path $PSScriptRoot 'src\EpubMerge.Cli\EpubMerge.Cli.csproj'
 
-foreach ($projectPath in @($wpfProjectPath, $winuiProjectPath, $cliProjectPath)) {
+foreach ($projectPath in @($wpfProjectPath, $cliProjectPath)) {
     if (-not (Test-Path -LiteralPath $projectPath -PathType Leaf)) {
         throw "Project file was not found: $projectPath"
     }
@@ -37,17 +36,19 @@ function Publish-Target {
     $targetModeDirectory = if ($TargetDeploymentMode -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
     $targetPublishDirectory = Join-Path $PSScriptRoot "publish\$TargetRuntimeIdentifier\$targetModeDirectory"
     $targetSelfContainedValue = if ($TargetDeploymentMode -eq 'SelfContained') { 'true' } else { 'false' }
-    $targetPlatform = if ($TargetRuntimeIdentifier -eq 'win-arm64') { 'ARM64' } else { 'x64' }
 
     if ($Clean -and (Test-Path -LiteralPath $targetPublishDirectory)) {
         Remove-Item -LiteralPath $targetPublishDirectory -Recurse -Force
     }
 
     New-Item -ItemType Directory -Path $targetPublishDirectory -Force | Out-Null
+    $legacyWinuiDirectory = Join-Path $targetPublishDirectory 'winui'
+    if (Test-Path -LiteralPath $legacyWinuiDirectory) {
+        throw "Legacy WinUI output exists at $legacyWinuiDirectory. Move it elsewhere or rerun with -Clean."
+    }
 
     foreach ($project in @(
         @{ Path = $wpfProjectPath; Name = 'EpubMerge.Gui'; Folder = 'wpf' },
-        @{ Path = $winuiProjectPath; Name = 'EpubMerge.Gui.WinUI'; Folder = 'winui' },
         @{ Path = $cliProjectPath; Name = 'EpubMerge.Cli'; Folder = 'cli' }
     )) {
         $publishArguments = @(
@@ -59,17 +60,7 @@ function Publish-Target {
             '--output', (Join-Path $targetPublishDirectory $project.Folder)
         )
 
-        if ($project.Folder -eq 'winui') {
-            $publishArguments += @(
-                "-p:Platform=$targetPlatform",
-                '-p:PublishSingleFile=false',
-                "-p:WindowsAppSDKSelfContained=$targetSelfContainedValue",
-                '-p:PublishTrimmed=false'
-            )
-        }
-        else {
-            $publishArguments += '-p:PublishSingleFile=true'
-        }
+        $publishArguments += '-p:PublishSingleFile=true'
 
         if ($ExcludeXmlAndPdb) {
             $publishArguments += @(
@@ -92,19 +83,14 @@ function Publish-Target {
         }
     }
 
-    foreach ($asset in @('winui\Assets\AppIcon.ico', 'winui\EpubMerge.Gui.WinUI.pri', 'winui\EpubMerge.Gui.WinUI.dll', 'winui\EpubMerge.Presentation.dll', 'winui\en\EpubMerge.Presentation.resources.dll')) {
-        if (-not (Test-Path -LiteralPath (Join-Path $targetPublishDirectory $asset) -PathType Leaf)) {
-            throw "Published GUI dependency is missing: $asset"
-        }
-    }
     if ($TargetDeploymentMode -eq 'SelfContained') {
-        foreach ($asset in @('winui\coreclr.dll', 'winui\Microsoft.UI.Xaml.dll', 'wpf\PresentationNative_cor3.dll')) {
+        foreach ($asset in @('wpf\PresentationNative_cor3.dll')) {
             if (-not (Test-Path -LiteralPath (Join-Path $targetPublishDirectory $asset) -PathType Leaf)) {
                 throw "Self-contained runtime dependency is missing: $asset"
             }
         }
     }
-    Write-Host "Published separate WPF, WinUI and CLI directories to: $targetPublishDirectory"
+    Write-Host "Published separate WPF and CLI directories to: $targetPublishDirectory"
 }
 
 if ($All) {

@@ -2,27 +2,39 @@
 
 `SelfContained` 不需要下载 `.NET 10` 环境
 
-`FrameworkDependent`：WPF 需要对应架构的 `.NET 10 Desktop Runtime`；WinUI 需要 `.NET 10 Runtime` 和 `Windows App Runtime 2.6.5`；CLI 需要 `.NET 10 Runtime`。
+`FrameworkDependent`：WPF 需要对应架构的 `.NET 10 Desktop Runtime`；CLI 需要 `.NET 10 Runtime`。GitHub ZIP 不再包含 WinUI。
 
 ## 当前更新
+
+- WinUI 页脚补齐 WPF 的作者信息与 GitHub 矢量图标，使用 WinUI `Path` 随主题调整颜色；新增英文 Disclaimer 弹窗入口及对应英文说明，不改变 WPF。
+
+### WinUI 多语言与语言菜单
+
+- 支持简中、英语、繁中、日语、韩语、法语、德语、西班牙语、巴西葡萄牙语和俄语，共 10 种界面语言。
+- 原语言 ComboBox 改为显示当前语言的下拉按钮，菜单使用语言自称并标记选中项，支持即时切换。
+- 首次启动跟随系统 UI 语言，不支持则回退英语；记住用户主动选择，不改变 WPF/CLI 和 EPUB 内容。
+- 补齐所有资源键及格式参数测试，同步 MSIX 语言声明与 Managed 卫星资源检查；保留 Native AOT 兼容和 Managed 商店默认。
+- 改善长翻译在小窗口中的按钮换行；商店构建使用 Rebuild，避免切换版本后复用旧清单。
 
 ### 商店 MSIX 与 GitHub ZIP 双通道
 
 - WinUI 新增显式单项目 MSIX 构建；默认仍为非打包应用，WPF/CLI 发布行为不变。
 - 商店包内置 .NET，通过框架依赖部署 Windows App SDK；包身份由独立配置生成，正式模式拒绝缺失/占位身份，演练模式须显式选择。
-- 新增手动及 V 标签触发的 x64/ARM64 MSIX Workflow，仅保存 Actions 工件，不自动提交商店，不向 GitHub Release 附加 MSIX。
-- GitHub Release 保持非打包 ZIP 双部署模式；商店 Workflow 失败不会阻塞 ZIP Release。
+- x64/ARM64 MSIX Workflow 仅手动触发，显式填写版本，仅保存 Actions 工件，人工上传商店，不向 GitHub Release 附加 MSIX。
+- GitHub Release 仅包含 WPF/CLI，保留 V 标签触发、x64/ARM64 及自包含/依赖框架四种 ZIP；不触发商店构建。
 - 新增 [跨电脑配置与人工首发指南](docs/MICROSOFT-STORE.md)，包含创建产品、填写身份、版本、签名测试和包上传步骤。
-- AOT 和自动商店提交仍未启用。
+- WinUI 新增显式 `NativeAot` 编译试验，修复动态本地化为编译绑定；x64 原生发布与实际 MSIX 包体检查通过。包内无 CoreCLR，Windows App SDK 仍由商店以框架依赖部署。
+- 商店默认保留 `Managed`，不静默回退；有包身份的安装运行由用户在隔离环境验收，ARM64 构建/设备验收尚待完成。WPF/CLI 不启用 AOT，自动商店提交仍未启用。
 
 ### WPF 与 WinUI 3 并存
 
+- WinUI 合并完成弹窗新增“关闭”按钮；关闭或按 Esc 仅关闭弹窗，不再打开输出目录。
 - 保留原版 WPF `EpubMerge.Gui`，新增独立非打包 WinUI 3 项目 `EpubMerge.Gui.WinUI`，基于 .NET 10 与 Windows App SDK 2.6.5。
 - 保留文件拖放与排序、封面、历史任务、进度取消、实时中英文及系统/浅色/深色主题。
 - WinUI 使用独立 Presentation 层及测试项目；WPF 保留原有 ViewModel、资源和测试，不引用 Presentation。
 - WinUI 历史与日志保留在 `%LOCALAPPDATA%\EpubMerge`，JSON 使用源生成；主题使用独立注册表键，不自动导入 WPF 历史。WPF 存储行为不变。
-- ZIP 中使用独立 `wpf`、`winui`、`cli` 子目录；WinUI 按完整目录发布，WPF 和 CLI 保留单文件托管程序集打包。
-- ZIP 自包含包同时携带 .NET 与 Windows App SDK 运行时；商店 MSIX 使用上节的独立依赖策略。
+- ZIP 中仅使用独立 `wpf`、`cli` 子目录；WPF 和 CLI 保留单文件托管程序集打包。
+- ZIP 自包含包携带 .NET/Windows Desktop 运行时；WinUI 仅通过商店 MSIX 分发，非打包模式仅用于本地开发与诊断。
 
 ### 新增独立 CLI
 
@@ -53,12 +65,11 @@
 
 ### 发布与测试
 
-- WPF、WinUI 和 CLI 发布到独立子目录，避免运行时依赖互相覆盖：
+- WPF 和 CLI 发布到独立子目录，避免运行时依赖互相覆盖：
 
 	```text
 	publish/<rid>/<self-contained|framework-dependent>/
 		wpf/EpubMerge.Gui.exe
-		winui/EpubMerge.Gui.WinUI.exe
 		cli/EpubMerge.Cli.exe
 	```
 

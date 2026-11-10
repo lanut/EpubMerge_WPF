@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="WindowTitle" xml:space="preserve"><value>Fusion EPUB</value></data>
+  <data name="Theme" xml:space="preserve"><value>Thème</value></data>
+  <data name="System" xml:space="preserve"><value>Système</value></data>
+  <data name="Light" xml:space="preserve"><value>Clair</value></data>
+  <data name="Dark" xml:space="preserve"><value>Sombre</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Langue</value></data>
+  <data name="Chinese" xml:space="preserve"><value>Chinois</value></data>
+  <data name="English" xml:space="preserve"><value>Anglais</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>Fusion dans l'ordre de la liste ; chaque livre devient une entrée principale de la table des matières.</value></data>
+  <data name="InputEpub" xml:space="preserve"><value>EPUB sources</value></data>
+  <data name="SetCoverFromBook" xml:space="preserve"><value>Utiliser cette couverture</value></data>
+  <data name="ExportCover" xml:space="preserve"><value>Exporter la couverture</value></data>
+  <data name="LocateInExplorer" xml:space="preserve"><value>Afficher dans l'Explorateur</value></data>
+  <data name="OpenWithDefault" xml:space="preserve"><value>Ouvrir avec l'application par défaut</value></data>
+  <data name="MoveTop" xml:space="preserve"><value>Placer en tête</value></data>
+  <data name="MoveBottom" xml:space="preserve"><value>Placer à la fin</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Monter</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Descendre</value></data>
+  <data name="RemoveSelected" xml:space="preserve"><value>Retirer la sélection</value></data>
+  <data name="FileName" xml:space="preserve"><value>Nom du fichier</value></data>
+  <data name="FullPath" xml:space="preserve"><value>Chemin complet</value></data>
+  <data name="DropEpub" xml:space="preserve"><value>Déposez des fichiers EPUB ici</value></data>
+  <data name="AddFilesHint" xml:space="preserve"><value>Vous pouvez aussi utiliser les boutons ci-dessous</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>Ajouter des fichiers</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>Ajouter un dossier</value></data>
+  <data name="Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="Clear" xml:space="preserve"><value>Vider</value></data>
+  <data name="MergeSettings" xml:space="preserve"><value>Options de fusion</value></data>
+  <data name="OutputFile" xml:space="preserve"><value>Fichier de sortie</value></data>
+  <data name="ChooseLocation" xml:space="preserve"><value>Choisir l'emplacement</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>Titre du recueil</value></data>
+  <data name="CoverPreview" xml:space="preserve"><value>Aperçu de la couverture</value></data>
+  <data name="DropImageHint" xml:space="preserve"><value>Déposez une image pour l'afficher</value></data>
+  <data name="ExistingCoverHint" xml:space="preserve"><value>Vous pouvez utiliser la couverture d'un livre</value></data>
+  <data name="CoverPath" xml:space="preserve"><value>Chemin de la couverture</value></data>
+  <data name="ChooseCover" xml:space="preserve"><value>Choisir la couverture</value></data>
+  <data name="History" xml:space="preserve"><value>Historique</value></data>
+  <data name="StartMerge" xml:space="preserve"><value>Fusionner</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="SupportedFormats" xml:space="preserve"><value>EPUB 2 / EPUB 3 pris en charge ; couvertures JPG, PNG, GIF, WEBP et SVG.</value></data>
+  <data name="Author" xml:space="preserve"><value>Auteur : lanut | </value></data>
+  <data name="GithubHome" xml:space="preserve"><value> Projet GitHub</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Aucune tâche récente</value></data>
+  <data name="SelectEpubFile" xml:space="preserve"><value>Choisir des fichiers EPUB</value></data>
+  <data name="SelectFilesToMerge" xml:space="preserve"><value>Choisissez les fichiers EPUB à fusionner</value></data>
+  <data name="EpubFileFilter" xml:space="preserve"><value>Fichiers EPUB|*.epub|Tous les fichiers|*.*</value></data>
+  <data name="SelectEpubFolder" xml:space="preserve"><value>Choisir un dossier EPUB</value></data>
+  <data name="SaveMergedEpub" xml:space="preserve"><value>Enregistrer l'EPUB fusionné</value></data>
+  <data name="SelectCoverImage" xml:space="preserve"><value>Choisir une image de couverture</value></data>
+  <data name="ImageFileFilter" xml:space="preserve"><value>Images|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.svg|Tous les fichiers|*.*</value></data>
+  <data name="ExportCoverImage" xml:space="preserve"><value>Exporter l'image de couverture</value></data>
+  <data name="ImageFilter" xml:space="preserve"><value>Images|*{0}|Tous les fichiers|*.*</value></data>
+  <data name="CoverMissing" xml:space="preserve"><value>« {0} » ne contient pas de couverture valide</value></data>
+  <data name="OpenEpubFailed" xml:space="preserve"><value>Aucune application ne peut ouvrir les EPUB. Installez un lecteur EPUB ou configurez l'association de fichiers.</value></data>
+  <data name="OpenFileFailed" xml:space="preserve"><value>Impossible d'ouvrir le fichier</value></data>
+  <data name="NoCoverSelected" xml:space="preserve"><value>Aucune couverture sélectionnée</value></data>
+  <data name="SelectImagePreview" xml:space="preserve"><value>Choisissez une image pour l'aperçu</value></data>
+  <data name="NoFiles" xml:space="preserve"><value>Aucun fichier ajouté</value></data>
+  <data name="FileCount" xml:space="preserve"><value>{0} EPUB</value></data>
+  <data name="RestoredTask" xml:space="preserve"><value>Configuration restaurée depuis l'historique</value></data>
+  <data name="CoverExtracted" xml:space="preserve"><value>Couverture extraite de « {0} »</value></data>
+  <data name="CoverReadFailed" xml:space="preserve"><value>Impossible de lire la couverture de « {0} » : {1}</value></data>
+  <data name="Cancelling" xml:space="preserve"><value>Annulation de la fusion…</value></data>
+  <data name="MergeAlreadyRunning" xml:space="preserve"><value>Une fusion est déjà en cours</value></data>
+  <data name="Merging" xml:space="preserve"><value>Fusion en cours, veuillez patienter…</value></data>
+  <data name="ReadingBook" xml:space="preserve"><value>Lecture de l'EPUB {0}…</value></data>
+  <data name="MergedBooks" xml:space="preserve"><value>{0}/{1} EPUB fusionnés</value></data>
+  <data name="MergeCompleted" xml:space="preserve"><value>Fusion terminée : {0}</value></data>
+  <data name="MergeCompletedTitle" xml:space="preserve"><value>Fusion terminée</value></data>
+  <data name="OpenOutputPrompt" xml:space="preserve"><value>Ouvrez le fichier de sortie ou affichez-le dans l'Explorateur.</value></data>
+  <data name="MergeFailed" xml:space="preserve"><value>Échec de la fusion</value></data>
+  <data name="MergeFailedRetry" xml:space="preserve"><value>La fusion a échoué. Réessayez plus tard.</value></data>
+  <data name="MergeCanceled" xml:space="preserve"><value>Fusion annulée</value></data>
+  <data name="ErrorLogSaved" xml:space="preserve"><value>Journal d'erreurs détaillé enregistré dans : {0}</value></data>
+  <data name="LoadedImage" xml:space="preserve"><value>Image {0} chargée</value></data>
+  <data name="CoverFileMissing" xml:space="preserve"><value>Le fichier de couverture n'existe pas
+Choisissez une autre image</value></data>
+  <data name="CoverCannotDisplay" xml:space="preserve"><value>Impossible d'afficher cette image actuellement
+Elle peut toutefois servir de couverture pour la fusion</value></data>
+  <data name="CannotReadCoverPath" xml:space="preserve"><value>Impossible de lire le chemin de la couverture</value></data>
+  <data name="UnsupportedPreviewFormat" xml:space="preserve"><value>Le décodeur système ne peut pas afficher ce format</value></data>
+  <data name="MergeErrorInvalidArguments" xml:space="preserve"><value>Paramètres de fusion invalides. Vérifiez les fichiers sources, l'emplacement de sortie et le titre.</value></data>
+  <data name="MergeErrorFileNotFound" xml:space="preserve"><value>Un fichier nécessaire à la fusion est introuvable. Vérifiez qu'il existe et reste accessible.</value></data>
+  <data name="MergeErrorUnauthorized" xml:space="preserve"><value>Vous n'avez pas les droits de lecture des sources ou d'écriture dans la destination. Choisissez un dossier accessible.</value></data>
+  <data name="MergeErrorIo" xml:space="preserve"><value>Échec des entrées/sorties. Vérifiez qu'aucune autre application n'utilise les fichiers et que l'espace disque est suffisant.</value></data>
+  <data name="MergeErrorInvalidData" xml:space="preserve"><value>La structure EPUB est invalide ou endommagée. Vérifiez les fichiers sources et réessayez.</value></data>
+  <data name="MergeErrorXml" xml:space="preserve"><value>Le répertoire interne de l'EPUB est invalide. Essayez un autre fichier.</value></data>
+  <data name="MergeErrorNotSupported" xml:space="preserve"><value>Cet EPUB contient des éléments non pris en charge. Essayez un autre fichier.</value></data>
+  <data name="MergeErrorUnknown" xml:space="preserve"><value>La fusion a échoué. Le fichier est peut-être endommagé ou non pris en charge. Vérifiez les sources et réessayez.</value></data>
+  <data name="CoverReadDetails" xml:space="preserve"><value>Le fichier est peut-être inaccessible ou le format de couverture non pris en charge.</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>Échec de l'opération</value></data>
+  <data name="StorageFailed" xml:space="preserve"><value>Impossible de lire ou d'enregistrer les données de l'application. Vérifiez les droits du dossier et l'espace disque. Une écriture du journal de diagnostic a été tentée dans le dossier local des données de l'application.</value></data>
+  <data name="RecursivePrompt" xml:space="preserve"><value>Importer aussi les EPUB des sous-dossiers ?</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="Close" xml:space="preserve"><value>Fermer</value></data>
+</root>

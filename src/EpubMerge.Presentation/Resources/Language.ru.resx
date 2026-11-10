@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="WindowTitle" xml:space="preserve"><value>Объединение EPUB</value></data>
+  <data name="Theme" xml:space="preserve"><value>Тема</value></data>
+  <data name="System" xml:space="preserve"><value>Системная</value></data>
+  <data name="Light" xml:space="preserve"><value>Светлая</value></data>
+  <data name="Dark" xml:space="preserve"><value>Тёмная</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Язык</value></data>
+  <data name="Chinese" xml:space="preserve"><value>Китайский</value></data>
+  <data name="English" xml:space="preserve"><value>Английский</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>Объединение в порядке списка; каждая книга станет разделом верхнего уровня в общем оглавлении.</value></data>
+  <data name="InputEpub" xml:space="preserve"><value>Исходные EPUB</value></data>
+  <data name="SetCoverFromBook" xml:space="preserve"><value>Использовать обложку книги</value></data>
+  <data name="ExportCover" xml:space="preserve"><value>Экспортировать обложку</value></data>
+  <data name="LocateInExplorer" xml:space="preserve"><value>Показать в Проводнике</value></data>
+  <data name="OpenWithDefault" xml:space="preserve"><value>Открыть в приложении по умолчанию</value></data>
+  <data name="MoveTop" xml:space="preserve"><value>В начало</value></data>
+  <data name="MoveBottom" xml:space="preserve"><value>В конец</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Выше</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Ниже</value></data>
+  <data name="RemoveSelected" xml:space="preserve"><value>Убрать выбранное</value></data>
+  <data name="FileName" xml:space="preserve"><value>Имя файла</value></data>
+  <data name="FullPath" xml:space="preserve"><value>Полный путь</value></data>
+  <data name="DropEpub" xml:space="preserve"><value>Перетащите файлы EPUB сюда</value></data>
+  <data name="AddFilesHint" xml:space="preserve"><value>Также можно использовать кнопки ниже</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>Добавить файлы</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>Добавить папку</value></data>
+  <data name="Remove" xml:space="preserve"><value>Убрать</value></data>
+  <data name="Clear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="MergeSettings" xml:space="preserve"><value>Параметры объединения</value></data>
+  <data name="OutputFile" xml:space="preserve"><value>Выходной файл</value></data>
+  <data name="ChooseLocation" xml:space="preserve"><value>Выбрать расположение</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>Название сборника</value></data>
+  <data name="CoverPreview" xml:space="preserve"><value>Просмотр обложки</value></data>
+  <data name="DropImageHint" xml:space="preserve"><value>Перетащите изображение для просмотра</value></data>
+  <data name="ExistingCoverHint" xml:space="preserve"><value>Можно использовать обложку исходной книги</value></data>
+  <data name="CoverPath" xml:space="preserve"><value>Путь к обложке</value></data>
+  <data name="ChooseCover" xml:space="preserve"><value>Выбрать обложку</value></data>
+  <data name="History" xml:space="preserve"><value>История</value></data>
+  <data name="StartMerge" xml:space="preserve"><value>Объединить</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="SupportedFormats" xml:space="preserve"><value>Поддерживаются EPUB 2 / EPUB 3; обложки JPG, PNG, GIF, WEBP и SVG.</value></data>
+  <data name="Author" xml:space="preserve"><value>Автор: lanut | </value></data>
+  <data name="GithubHome" xml:space="preserve"><value> Проект на GitHub</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Недавних задач нет</value></data>
+  <data name="SelectEpubFile" xml:space="preserve"><value>Выберите файлы EPUB</value></data>
+  <data name="SelectFilesToMerge" xml:space="preserve"><value>Выберите файлы EPUB для объединения</value></data>
+  <data name="EpubFileFilter" xml:space="preserve"><value>Файлы EPUB|*.epub|Все файлы|*.*</value></data>
+  <data name="SelectEpubFolder" xml:space="preserve"><value>Выберите папку с EPUB</value></data>
+  <data name="SaveMergedEpub" xml:space="preserve"><value>Сохранить объединённый EPUB</value></data>
+  <data name="SelectCoverImage" xml:space="preserve"><value>Выберите изображение обложки</value></data>
+  <data name="ImageFileFilter" xml:space="preserve"><value>Изображения|*.jpg;*.jpeg;*.png;*.gif;*.webp;*.svg|Все файлы|*.*</value></data>
+  <data name="ExportCoverImage" xml:space="preserve"><value>Экспортировать изображение обложки</value></data>
+  <data name="ImageFilter" xml:space="preserve"><value>Изображения|*{0}|Все файлы|*.*</value></data>
+  <data name="CoverMissing" xml:space="preserve"><value>В «{0}» нет допустимого изображения обложки</value></data>
+  <data name="OpenEpubFailed" xml:space="preserve"><value>Приложение для открытия EPUB не найдено. Установите программу для чтения EPUB или настройте сопоставление файлов.</value></data>
+  <data name="OpenFileFailed" xml:space="preserve"><value>Не удалось открыть файл</value></data>
+  <data name="NoCoverSelected" xml:space="preserve"><value>Обложка не выбрана</value></data>
+  <data name="SelectImagePreview" xml:space="preserve"><value>Выберите изображение для просмотра</value></data>
+  <data name="NoFiles" xml:space="preserve"><value>Файлы не добавлены</value></data>
+  <data name="FileCount" xml:space="preserve"><value>Файлов EPUB: {0}</value></data>
+  <data name="RestoredTask" xml:space="preserve"><value>Параметры задачи восстановлены из истории</value></data>
+  <data name="CoverExtracted" xml:space="preserve"><value>Обложка извлечена из «{0}»</value></data>
+  <data name="CoverReadFailed" xml:space="preserve"><value>Не удалось прочитать обложку из «{0}»: {1}</value></data>
+  <data name="Cancelling" xml:space="preserve"><value>Отмена объединения…</value></data>
+  <data name="MergeAlreadyRunning" xml:space="preserve"><value>Объединение уже выполняется</value></data>
+  <data name="Merging" xml:space="preserve"><value>Выполняется объединение, подождите…</value></data>
+  <data name="ReadingBook" xml:space="preserve"><value>Чтение EPUB {0}…</value></data>
+  <data name="MergedBooks" xml:space="preserve"><value>Объединено EPUB: {0}/{1}</value></data>
+  <data name="MergeCompleted" xml:space="preserve"><value>Объединение завершено: {0}</value></data>
+  <data name="MergeCompletedTitle" xml:space="preserve"><value>Объединение завершено</value></data>
+  <data name="OpenOutputPrompt" xml:space="preserve"><value>Откройте выходной файл или покажите его в Проводнике.</value></data>
+  <data name="MergeFailed" xml:space="preserve"><value>Ошибка объединения</value></data>
+  <data name="MergeFailedRetry" xml:space="preserve"><value>Не удалось объединить файлы. Повторите попытку позже.</value></data>
+  <data name="MergeCanceled" xml:space="preserve"><value>Объединение отменено</value></data>
+  <data name="ErrorLogSaved" xml:space="preserve"><value>Подробный журнал ошибок сохранён в: {0}</value></data>
+  <data name="LoadedImage" xml:space="preserve"><value>Загружено изображение {0}</value></data>
+  <data name="CoverFileMissing" xml:space="preserve"><value>Файл обложки не существует
+Выберите изображение заново</value></data>
+  <data name="CoverCannotDisplay" xml:space="preserve"><value>Сейчас невозможно показать это изображение
+Его по-прежнему можно использовать как обложку</value></data>
+  <data name="CannotReadCoverPath" xml:space="preserve"><value>Не удалось прочитать путь к обложке</value></data>
+  <data name="UnsupportedPreviewFormat" xml:space="preserve"><value>Системный декодер не поддерживает просмотр этого формата</value></data>
+  <data name="MergeErrorInvalidArguments" xml:space="preserve"><value>Недопустимые параметры объединения. Проверьте исходные файлы, путь вывода и название.</value></data>
+  <data name="MergeErrorFileNotFound" xml:space="preserve"><value>Нужный для объединения файл не найден. Убедитесь, что он существует и доступен.</value></data>
+  <data name="MergeErrorUnauthorized" xml:space="preserve"><value>Нет прав на чтение исходных файлов или запись в выбранное место. Выберите доступную папку.</value></data>
+  <data name="MergeErrorIo" xml:space="preserve"><value>Ошибка ввода-вывода. Проверьте, не используются ли файлы другими приложениями и достаточно ли места на диске.</value></data>
+  <data name="MergeErrorInvalidData" xml:space="preserve"><value>Структура EPUB недопустима или повреждена. Проверьте исходные файлы и повторите попытку.</value></data>
+  <data name="MergeErrorXml" xml:space="preserve"><value>Внутренний каталог EPUB недопустим. Попробуйте другой файл.</value></data>
+  <data name="MergeErrorNotSupported" xml:space="preserve"><value>Этот EPUB содержит неподдерживаемые данные. Попробуйте другой файл.</value></data>
+  <data name="MergeErrorUnknown" xml:space="preserve"><value>Объединение не удалось. Файл может быть повреждён или не поддерживаться. Проверьте исходные файлы и повторите попытку.</value></data>
+  <data name="CoverReadDetails" xml:space="preserve"><value>Возможно, файл недоступен или формат обложки не поддерживается.</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>Операция не выполнена</value></data>
+  <data name="StorageFailed" xml:space="preserve"><value>Не удалось прочитать или сохранить данные приложения. Проверьте права на папку и свободное место на диске. Выполнена попытка записи диагностики в локальную папку данных приложения.</value></data>
+  <data name="RecursivePrompt" xml:space="preserve"><value>Импортировать также EPUB из вложенных папок?</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="Close" xml:space="preserve"><value>Закрыть</value></data>
+</root>
