@@ -77,7 +77,9 @@ WinUI 支持简中 `zh-CN`、英语 `en-US`、繁中 `zh-TW`、日语 `ja-JP`、
 
 **Product ID、Seller ID、GitHub 用户名均不等于包 Identity Name 或 Publisher。** 这些包身份字段不是密钥，可以随代码提交；pfx、私钥和 Client Secret 不能提交。
 
-初始配置刻意把前三项留空。正式构建发现缺失/占位/演练身份会失败。脚本只能校验格式，无法代替 Partner Center 核对真实归属。
+当前已将计划使用的 `IdentityName` 设为 `lanut.EpubMerge`，尚待从 Partner Center 核对；它不是商店 Product ID 或显示名称。`Publisher`、`PublisherDisplayName` 仍留空，必须从产品身份页复制。正式构建发现缺失/占位/演练身份会失败。脚本只能校验格式，无法代替 Partner Center 核对真实归属。
+
+十种语言的标题建议、简短描述、完整描述和功能列表位于 [packaging/store-listings](../packaging/store-listings/README.md)。按语言手动填入商店页面，并使用已在后台保留的产品名称；这些 Markdown 不会自动上传，也不替代截图及其余必填资料。
 
 在另一台电脑将配置提交并推送到需要构建的分支；否则远端仍使用旧的空配置。
 
