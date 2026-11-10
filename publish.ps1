@@ -9,7 +9,7 @@ param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Release',
 
-        [switch]$ExcludeXmlAndPdb,
+    [switch]$ExcludeXmlAndPdb,
 
     [switch]$Clean,
 
@@ -18,10 +18,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$guiProjectPath = Join-Path $PSScriptRoot 'src\EpubMerge.Gui\EpubMerge.Gui.csproj'
+$wpfProjectPath = Join-Path $PSScriptRoot 'src\EpubMerge.Gui\EpubMerge.Gui.csproj'
+$winuiProjectPath = Join-Path $PSScriptRoot 'src\EpubMerge.Gui.WinUI\EpubMerge.Gui.WinUI.csproj'
 $cliProjectPath = Join-Path $PSScriptRoot 'src\EpubMerge.Cli\EpubMerge.Cli.csproj'
 
-foreach ($projectPath in @($guiProjectPath, $cliProjectPath)) {
+foreach ($projectPath in @($wpfProjectPath, $winuiProjectPath, $cliProjectPath)) {
     if (-not (Test-Path -LiteralPath $projectPath -PathType Leaf)) {
         throw "Project file was not found: $projectPath"
     }
@@ -36,6 +37,7 @@ function Publish-Target {
     $targetModeDirectory = if ($TargetDeploymentMode -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
     $targetPublishDirectory = Join-Path $PSScriptRoot "publish\$TargetRuntimeIdentifier\$targetModeDirectory"
     $targetSelfContainedValue = if ($TargetDeploymentMode -eq 'SelfContained') { 'true' } else { 'false' }
+    $targetPlatform = if ($TargetRuntimeIdentifier -eq 'win-arm64') { 'ARM64' } else { 'x64' }
 
     if ($Clean -and (Test-Path -LiteralPath $targetPublishDirectory)) {
         Remove-Item -LiteralPath $targetPublishDirectory -Recurse -Force
@@ -44,8 +46,9 @@ function Publish-Target {
     New-Item -ItemType Directory -Path $targetPublishDirectory -Force | Out-Null
 
     foreach ($project in @(
-        @{ Path = $guiProjectPath; Name = 'EpubMerge.Gui' },
-        @{ Path = $cliProjectPath; Name = 'EpubMerge.Cli' }
+        @{ Path = $wpfProjectPath; Name = 'EpubMerge.Gui'; Folder = 'wpf' },
+        @{ Path = $winuiProjectPath; Name = 'EpubMerge.Gui.WinUI'; Folder = 'winui' },
+        @{ Path = $cliProjectPath; Name = 'EpubMerge.Cli'; Folder = 'cli' }
     )) {
         $publishArguments = @(
             'publish',
@@ -53,18 +56,29 @@ function Publish-Target {
             '--configuration', $Configuration,
             '--runtime', $TargetRuntimeIdentifier,
             '--self-contained', $targetSelfContainedValue,
-            '--output', $targetPublishDirectory,
-                '-p:PublishSingleFile=true'
+            '--output', (Join-Path $targetPublishDirectory $project.Folder)
         )
 
-            if ($ExcludeXmlAndPdb) {
-                $publishArguments += @(
-                    '-p:GenerateDocumentationFile=false',
-                    '-p:DebugSymbols=false',
-                    '-p:DebugType=None',
-                    '-p:CopyOutputSymbolsToPublishDirectory=false'
-                )
-            }
+        if ($project.Folder -eq 'winui') {
+            $publishArguments += @(
+                "-p:Platform=$targetPlatform",
+                '-p:PublishSingleFile=false',
+                "-p:WindowsAppSDKSelfContained=$targetSelfContainedValue",
+                '-p:PublishTrimmed=false'
+            )
+        }
+        else {
+            $publishArguments += '-p:PublishSingleFile=true'
+        }
+
+        if ($ExcludeXmlAndPdb) {
+            $publishArguments += @(
+                '-p:GenerateDocumentationFile=false',
+                '-p:DebugSymbols=false',
+                '-p:DebugType=None',
+                '-p:CopyOutputSymbolsToPublishDirectory=false'
+            )
+        }
 
         Write-Host "Publishing $($project.Name) [$TargetRuntimeIdentifier, $targetModeDirectory, $Configuration]..."
         & dotnet @publishArguments
@@ -72,9 +86,25 @@ function Publish-Target {
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet publish failed for $($project.Name) with exit code $LASTEXITCODE."
         }
+        $executable = Join-Path $targetPublishDirectory "$($project.Folder)\$($project.Name).exe"
+        if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
+            throw "Published executable is missing: $executable"
+        }
     }
 
-    Write-Host "Published GUI and CLI to: $targetPublishDirectory"
+    foreach ($asset in @('winui\Assets\AppIcon.ico', 'winui\EpubMerge.Gui.WinUI.pri', 'winui\EpubMerge.Gui.WinUI.dll', 'winui\EpubMerge.Presentation.dll', 'winui\en\EpubMerge.Presentation.resources.dll')) {
+        if (-not (Test-Path -LiteralPath (Join-Path $targetPublishDirectory $asset) -PathType Leaf)) {
+            throw "Published GUI dependency is missing: $asset"
+        }
+    }
+    if ($TargetDeploymentMode -eq 'SelfContained') {
+        foreach ($asset in @('winui\coreclr.dll', 'winui\Microsoft.UI.Xaml.dll', 'wpf\PresentationNative_cor3.dll')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $targetPublishDirectory $asset) -PathType Leaf)) {
+                throw "Self-contained runtime dependency is missing: $asset"
+            }
+        }
+    }
+    Write-Host "Published separate WPF, WinUI and CLI directories to: $targetPublishDirectory"
 }
 
 if ($All) {

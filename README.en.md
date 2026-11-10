@@ -2,21 +2,23 @@
 
 [中文文档](README.md)
 
-A simple Windows desktop EPUB merger built with WPF and .NET 10. It combines multiple EPUB files into a single EPUB 3 file in the specified order, while keeping each source book as a top-level item in the merged contents. The application supports drag-and-drop ordering, custom titles and output paths, cover preview, bilingual UI, and system, light, and dark themes.
+A simple Windows desktop EPUB merger with two independent GUIs: the original WPF application and an unpackaged WinUI 3 application. Both use .NET 10; WinUI uses Windows App SDK 2.6.5. It combines multiple EPUB files into a single EPUB 3 file in the specified order, while keeping each source book as a top-level item in the merged contents. The application supports drag-and-drop ordering, custom titles and output paths, cover preview, bilingual UI, and system, light, and dark themes.
 
 ## Screenshots
 
+These screenshots show WinUI; WPF retains its original interface.
+
 ### Light theme (empty state)
 
-![Empty application window in the light theme](readmeRef/photo_01_en.webp)
+![WinUI application in the light theme](readmeRef/winui-light-en.png)
 
 ### Dark theme (empty state)
 
-![Empty application window in the dark theme](readmeRef/photo_02_en.webp)
+![WinUI application in the dark theme](readmeRef/winui-dark.png)
 
 ### Application in use
 
-![Application window with multiple EPUB files and a cover loaded](readmeRef/photo_03_en.webp)
+![WinUI application with EPUB files and a cover loaded](readmeRef/winui-in-use.png)
 
 ## Features
 
@@ -53,7 +55,7 @@ The output file must use the `.epub` extension and must not overwrite an input f
 
 ## CLI mode
 
-The published package contains a standalone CLI executable that does not create a window. The GUI and CLI are published into the same architecture/deployment directory:
+The published package contains a standalone CLI executable that does not create a window. WPF, WinUI and CLI use separate `wpf`, `winui` and `cli` subdirectories to keep their runtime dependencies isolated. Run the following commands from the `cli` directory:
 
 ```powershell
 EpubMerge.Cli.exe -i .\vol*.epub -o .\merged.epub --title "Collection"
@@ -78,29 +80,41 @@ CLI exit codes are `0` (success), `1` (argument or input validation failure), an
 
 ## Requirements
 
-- Windows
-- .NET 10 Desktop Runtime
+- Windows 11, x64 or ARM64 (x64 verified locally; other operating systems must meet both .NET 10 and Windows App SDK support requirements)
+- Self-contained packages bundle the .NET / Windows Desktop / Windows App SDK runtimes required by each host
+- Framework-dependent WPF requires .NET 10 Desktop Runtime for the matching architecture
+- Framework-dependent WinUI requires .NET 10 Runtime and Windows App Runtime 2.6.5 for the matching architecture
+- Framework-dependent CLI requires .NET 10 Runtime for the matching architecture
+- WinUI cover previews use system image decoders; unsupported images produce an explicit preview error without modifying the source
+
+The GUIs do not import or synchronize each other's data. WPF retains its original behavior: history in `EpubMerge.Gui\history.json` beneath the application directory, logs in the application directory, and theme settings in `HKCU\Software\EpubMerge.Gui`. WinUI retains history, logs and cache in `%LOCALAPPDATA%\EpubMerge`, with an independent theme key at `HKCU\Software\EpubMerge.Gui.WinUI`; it does not automatically import WPF history.
 
 ## Build
 
 Run the following commands from the repository root:
 
 ```powershell
-dotnet restore EpubMerge.slnx
-dotnet build EpubMerge.slnx
-dotnet test EpubMerge.slnx
+dotnet restore EpubMerge.slnx -p:Platform=x64
+dotnet build EpubMerge.slnx -p:Platform=x64
+dotnet test EpubMerge.slnx -p:Platform=x64
 ```
 
-Run the GUI project:
+Run WPF:
 
 ```powershell
-dotnet run --project src/EpubMerge.Gui/EpubMerge.Gui.csproj
+dotnet run --project src\EpubMerge.Gui\EpubMerge.Gui.csproj
+```
+
+Run WinUI:
+
+```powershell
+dotnet run --project src\EpubMerge.Gui.WinUI\EpubMerge.Gui.WinUI.csproj -p:Platform=x64
 ```
 
 Run the CLI project:
 
 ```powershell
-dotnet run --project src/EpubMerge.Cli/EpubMerge.Cli.csproj -- --help
+dotnet run --project src\EpubMerge.Cli\EpubMerge.Cli.csproj -- --help
 ```
 
 ## GitHub Actions release
@@ -116,7 +130,17 @@ git push origin V1.0.0
 
 Before pushing the tag, update `RELEASE_NOTES.md` in the repository root with the user-visible changes for that version. The workflow writes this file to the GitHub Release description and appends GitHub-generated commit notes.
 
-The workflow creates four archives on a Windows runner: self-contained and framework-dependent packages for both `win-x64` and `win-arm64`. Each archive places the GUI and CLI in the same directory, which also provides a location for future shared configuration. Framework-dependent packages require the .NET 10 Desktop Runtime on the target machine.
+The workflow builds both GUIs and runs all tests, then creates four archives on a Windows runner: self-contained and framework-dependent packages for both `win-x64` and `win-arm64`. Each archive contains:
+
+```text
+wpf\EpubMerge.Gui.exe
+winui\EpubMerge.Gui.WinUI.exe
+cli\EpubMerge.Cli.exe
+```
+
+Dependencies are isolated across the three directories. Distribute the entire `winui` directory: WinUI is not a single-file executable. WPF and CLI retain single-file managed assembly bundling; keep any accompanying native dependencies. Self-contained packages include the runtimes required by each host.
+
+Development requires the .NET 10 SDK, Visual Studio WinUI tools and Windows SDK 26100. `global.json` excludes preview SDKs. Local ARM tools are not required. Native AOT and Store MSIX publishing are deferred to a later GitHub Actions phase.
 
 ## Project structure
 
@@ -124,11 +148,14 @@ The workflow creates four archives on a Windows runner: self-contained and frame
 src/
   EpubMerge.Core.Pure/  EPUB validation and merge logic
   EpubMerge.Cli/        Standalone command-line application
-  EpubMerge.Gui/        WPF graphical interface
+  EpubMerge.Gui/        Original WPF GUI with independent ViewModels/resources
+  EpubMerge.Gui.WinUI/  Unpackaged WinUI 3 graphical interface
+  EpubMerge.Presentation/ WinUI ViewModels, localization and storage
 tests/
   EpubMerge.Core.Tests/ Core logic tests
   EpubMerge.Cli.Tests/   CLI behavior and output tests
-  EpubMerge.Gui.Tests/  ViewModel tests
+  EpubMerge.Gui.Tests/  Original WPF ViewModel tests
+  EpubMerge.Presentation.Tests/ WinUI presentation tests without GUI framework loading
 readmeRef/              README screenshots
 ```
 

@@ -2,9 +2,18 @@
 
 `SelfContained` 不需要下载 `.NET 10` 环境
 
-`FrameworkDependent` 需要下载 `.NET 10` 环境即可运行
+`FrameworkDependent`：WPF 需要对应架构的 `.NET 10 Desktop Runtime`；WinUI 需要 `.NET 10 Runtime` 和 `Windows App Runtime 2.6.5`；CLI 需要 `.NET 10 Runtime`。
 
 ## 当前更新
+
+### WPF 与 WinUI 3 并存
+
+- 保留原版 WPF `EpubMerge.Gui`，新增独立非打包 WinUI 3 项目 `EpubMerge.Gui.WinUI`，基于 .NET 10 与 Windows App SDK 2.6.5。
+- 保留文件拖放与排序、封面、历史任务、进度取消、实时中英文及系统/浅色/深色主题。
+- WinUI 使用独立 Presentation 层及测试项目；WPF 保留原有 ViewModel、资源和测试，不引用 Presentation。
+- WinUI 历史与日志保留在 `%LOCALAPPDATA%\EpubMerge`，JSON 使用源生成；主题使用独立注册表键，不自动导入 WPF 历史。WPF 存储行为不变。
+- ZIP 中使用独立 `wpf`、`winui`、`cli` 子目录；WinUI 按完整目录发布，WPF 和 CLI 保留单文件托管程序集打包。
+- 自包含包同时携带 .NET 与 Windows App SDK 运行时；AOT 和商店 MSIX 留到后续阶段。
 
 ### 新增独立 CLI
 
@@ -35,12 +44,13 @@
 
 ### 发布与测试
 
-- GUI 和 CLI 现在发布到同一个架构/部署模式目录，便于共同分发和后续共享配置：
+- WPF、WinUI 和 CLI 发布到独立子目录，避免运行时依赖互相覆盖：
 
 	```text
 	publish/<rid>/<self-contained|framework-dependent>/
-		EpubMerge.Gui.exe
-		EpubMerge.Cli.exe
+		wpf/EpubMerge.Gui.exe
+		winui/EpubMerge.Gui.WinUI.exe
+		cli/EpubMerge.Cli.exe
 	```
 
 - 发布流程新增 CLI `--help` smoke test。

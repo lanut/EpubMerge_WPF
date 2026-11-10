@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>EpubMerge.Gui</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\EpubMerge.Core.Pure\EpubMerge.Core.Pure.csproj" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <InternalsVisibleTo Include="EpubMerge.Presentation.Tests" />
+    </ItemGroup>
+</Project>

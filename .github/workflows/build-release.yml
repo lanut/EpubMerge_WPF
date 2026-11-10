@@ -29,13 +29,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
-        run: dotnet restore EpubMerge.slnx
+        run: dotnet restore EpubMerge.slnx -p:Platform=x64
 
       - name: Build
-        run: dotnet build EpubMerge.slnx --configuration Release --no-restore
+        run: dotnet build EpubMerge.slnx --configuration Release -p:Platform=x64 --no-restore
 
       - name: Test
-        run: dotnet test EpubMerge.slnx --configuration Release --no-build --verbosity normal
+        run: dotnet test EpubMerge.slnx --configuration Release -p:Platform=x64 --no-build --verbosity normal
 
   publish:
     name: Publish ${{ matrix.runtime }} ${{ matrix.mode }}
@@ -73,7 +73,7 @@ jobs:
         shell: pwsh
         run: |
           $modeDirectory = if ('${{ matrix.mode }}' -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
-          & "publish\${{ matrix.runtime }}\$modeDirectory\EpubMerge.Cli.exe" --help
+          & "publish\${{ matrix.runtime }}\$modeDirectory\cli\EpubMerge.Cli.exe" --help
           if ($LASTEXITCODE -ne 0) { throw "CLI help command failed with exit code $LASTEXITCODE." }
 
       - name: Validate ARM64 CLI artifact
@@ -81,8 +81,21 @@ jobs:
         shell: pwsh
         run: |
           $modeDirectory = if ('${{ matrix.mode }}' -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
-          $cliPath = "publish\${{ matrix.runtime }}\$modeDirectory\EpubMerge.Cli.exe"
+          $cliPath = "publish\${{ matrix.runtime }}\$modeDirectory\cli\EpubMerge.Cli.exe"
           if (-not (Test-Path -LiteralPath $cliPath -PathType Leaf)) { throw "CLI artifact was not found: $cliPath" }
+
+      - name: Validate executable architectures
+        shell: pwsh
+        run: |
+          $modeDirectory = if ('${{ matrix.mode }}' -eq 'SelfContained') { 'self-contained' } else { 'framework-dependent' }
+          $expected = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 0xAA64 } else { 0x8664 }
+          foreach ($relative in @('wpf\EpubMerge.Gui.exe', 'winui\EpubMerge.Gui.WinUI.exe', 'cli\EpubMerge.Cli.exe')) {
+            $path = "publish\${{ matrix.runtime }}\$modeDirectory\$relative"
+            $bytes = [System.IO.File]::ReadAllBytes($path)
+            $peOffset = [BitConverter]::ToInt32($bytes, 0x3c)
+            $machine = [BitConverter]::ToUInt16($bytes, $peOffset + 4)
+            if ($machine -ne $expected) { throw "Wrong executable architecture: $path ($machine)" }
+          }
 
       - name: Create archive
         shell: pwsh
@@ -102,6 +115,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
       - name: Download archives
         uses: actions/download-artifact@v4
         with:

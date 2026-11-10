@@ -2,21 +2,23 @@
 
 [English](README.en.md)
 
-一个简洁的 Windows EPUB 合并桌面工具，基于 WPF 和 .NET 10 构建。它可以将多本 EPUB 按指定顺序合并为一个 EPUB 3 文件，并保留每本源书作为合并目录中的一级项目。应用支持拖放排序、自定义书名与输出路径、封面预览，以及系统、浅色和深色主题，适合整理连载小说、系列电子书和分卷内容。
+一个简洁的 Windows EPUB 合并桌面工具，同时提供原版 WPF 和非打包 WinUI 3 两个独立 GUI，均基于 .NET 10；WinUI 使用 Windows App SDK 2.6.5。它可以将多本 EPUB 按指定顺序合并为一个 EPUB 3 文件，并保留每本源书作为合并目录中的一级项目。应用支持拖放排序、自定义书名与输出路径、封面预览，以及系统、浅色和深色主题，适合整理连载小说、系列电子书和分卷内容。
 
 ## 界面预览
 
+以下为 WinUI 版本截图；WPF 保留原有界面。
+
 ### 浅色主题（空白状态）
 
-![浅色主题下的空白应用界面](readmeRef/photo_01.webp)
+![浅色主题下的 WinUI 应用界面](readmeRef/winui-light.png)
 
 ### 深色主题（空白状态）
 
-![深色主题下的空白应用界面](readmeRef/photo_02.webp)
+![深色主题下的 WinUI 应用界面](readmeRef/winui-dark.png)
 
 ### 使用中的应用界面
 
-![加载多本 EPUB 和封面后的应用界面](readmeRef/photo_03.webp)
+![加载多本 EPUB 和封面后的 WinUI 应用界面](readmeRef/winui-in-use.png)
 
 ## 功能特性
 
@@ -51,7 +53,7 @@
 
 ## CLI 命令行模式
 
-发布包中的 CLI 程序独立于 GUI，不会创建窗口。GUI 和 CLI 位于同一个架构/部署模式目录中：
+发布包包含不会弹出窗口的独立 CLI。WPF、WinUI 和 CLI 分别位于 `wpf`、`winui` 和 `cli` 子目录，以下命令在 `cli` 目录执行：
 
 ```powershell
 EpubMerge.Cli.exe -i .\vol*.epub -o .\merged.epub --title "合辑"
@@ -76,29 +78,41 @@ CLI 退出码为 `0`（成功）、`1`（参数或输入校验失败）和 `2`�
 
 ## 运行环境
 
-- Windows
-- .NET 10 Desktop Runtime
+- Windows 11，x64 或 ARM64（本地验证 x64；其他系统须满足 .NET 10 和 Windows App SDK 的支持要求）
+- 自包含发布包携带各宿主所需的 .NET / Windows Desktop / Windows App SDK 运行时
+- 依赖框架 WPF：对应架构的 .NET 10 Desktop Runtime
+- 依赖框架 WinUI：对应架构的 .NET 10 Runtime 及 Windows App Runtime 2.6.5
+- 依赖框架 CLI：对应架构的 .NET 10 Runtime
+- WinUI 封面预览依赖系统图像解码器；无法解码的图像会显示错误，不影响原始文件
+
+两个 GUI 的数据互不导入或同步。WPF 保持原行为：历史位于程序目录下的 `EpubMerge.Gui\history.json`，日志位于程序目录，主题位于 `HKCU\Software\EpubMerge.Gui`。WinUI 历史、日志及缓存保留在 `%LOCALAPPDATA%\EpubMerge`，主题使用独立的 `HKCU\Software\EpubMerge.Gui.WinUI`；不会自动导入 WPF 历史。
 
 ## 构建项目
 
 在仓库根目录执行：
 
 ```powershell
-dotnet restore EpubMerge.slnx
-dotnet build EpubMerge.slnx
-dotnet test EpubMerge.slnx
+dotnet restore EpubMerge.slnx -p:Platform=x64
+dotnet build EpubMerge.slnx -p:Platform=x64
+dotnet test EpubMerge.slnx -p:Platform=x64
 ```
 
-启动 GUI 项目：
+启动 WPF：
 
 ```powershell
-dotnet run --project src/EpubMerge.Gui/EpubMerge.Gui.csproj
+dotnet run --project src\EpubMerge.Gui\EpubMerge.Gui.csproj
+```
+
+启动 WinUI：
+
+```powershell
+dotnet run --project src\EpubMerge.Gui.WinUI\EpubMerge.Gui.WinUI.csproj -p:Platform=x64
 ```
 
 运行 CLI：
 
 ```powershell
-dotnet run --project src/EpubMerge.Cli/EpubMerge.Cli.csproj -- --help
+dotnet run --project src\EpubMerge.Cli\EpubMerge.Cli.csproj -- --help
 ```
 
 ## GitHub Actions 发布
@@ -114,7 +128,17 @@ git push origin V1.0.0
 
 推送标签前，请先更新根目录下的 `RELEASE_NOTES.md`，填写本次版本的实际变更。工作流会将该文件写入 GitHub Release 描述，并附加 GitHub 自动生成的提交说明。
 
-工作流会在 Windows runner 上生成四个压缩包：`win-x64` 和 `win-arm64` 各自包含自包含版与依赖框架版。每个压缩包的同一目录中同时包含 GUI 和 CLI，后续也可放置共享配置文件。依赖框架版需要目标机器安装 .NET 10 Desktop Runtime。
+工作流构建两个 GUI 并运行全部测试，在 Windows runner 上生成四个压缩包：`win-x64` 和 `win-arm64` 各自包含自包含版与依赖框架版。每个包包含：
+
+```text
+wpf\EpubMerge.Gui.exe
+winui\EpubMerge.Gui.WinUI.exe
+cli\EpubMerge.Cli.exe
+```
+
+三个目录隔离依赖。WinUI 必须连同整个 `winui` 目录分发，不是单文件程序；WPF 和 CLI 保留单文件托管程序集打包策略，仍需保留同目录附带的原生依赖。自包含模式携带各宿主所需的运行时。
+
+开发机需 .NET 10 SDK、VS WinUI 开发工具及 Windows SDK 26100；`global.json` 排除预览 SDK。本地无需 ARM 工具。本阶段不启用 AOT、不生成商店 MSIX，后续在 GitHub Actions 增加。
 
 ## 项目结构
 
@@ -122,11 +146,14 @@ git push origin V1.0.0
 src/
   EpubMerge.Core.Pure/  EPUB 校验与合并核心逻辑
   EpubMerge.Cli/        独立命令行程序
-  EpubMerge.Gui/        WPF 图形界面
- tests/
+  EpubMerge.Gui/        原版 WPF 图形界面，独立 ViewModel/资源
+  EpubMerge.Gui.WinUI/  非打包 WinUI 3 图形界面
+  EpubMerge.Presentation/ WinUI 使用的可测试 ViewModel、本地化与数据存储
+tests/
   EpubMerge.Core.Tests/ 核心逻辑测试
   EpubMerge.Cli.Tests/   CLI 输出与行为测试
-  EpubMerge.Gui.Tests/  界面 ViewModel 测试
+  EpubMerge.Gui.Tests/  原版 WPF ViewModel 测试
+  EpubMerge.Presentation.Tests/ WinUI 展示层测试（不加载 GUI 框架）
 readmeRef/              README 截图
 ```
 
